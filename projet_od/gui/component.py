@@ -2,11 +2,8 @@ import pygame as pg
 from projet_od.gui.theme import *
 from projet_od.utils import clamp, map
 
-class GUIComponent(pg.sprite.Sprite):
+class Component:
     """_summary_
-
-    Args:
-        pg (_type_): _description_
     """
     def __init__(self, pos : tuple, size : tuple, **kwargs):
         """_summary_
@@ -18,14 +15,9 @@ class GUIComponent(pg.sprite.Sprite):
         Returns:
             _type_: _description_
         """
-        pg.sprite.Sprite.__init__(self)
+
         self.rect = pg.Rect(pos, size)
-        image = kwargs.get("image", None)
-        if image == None:
-            self.image = pg.Surface(size)
-            self.image.fill((123,30,73))
-        else:
-            self.image = image
+
         def empty():
             pass
         def get(attr):
@@ -34,13 +26,16 @@ class GUIComponent(pg.sprite.Sprite):
             if hasattr(self, attr):
                 return getattr(self, attr)
             return empty
+
         self.theme = kwargs.get("theme", RED)
+
         self.on_click = get("on_click")
         self.on_left_click = get("on_left_click")
         self.on_right_click = get("on_right_click")
         self.on_middle_click = get("on_middle_click")
         self.on_hover = get("on_hover")
         self.on_press = get("on_press")
+        self.on_drag = get("on_drag")
         self.on_change = get("on_change")
         self.on_press_left = get("on_press_left")
         self.on_press_right = get("on_press_right")
@@ -53,17 +48,10 @@ class GUIComponent(pg.sprite.Sprite):
         self.pressed_middle = False
         self.hover = False
         self.focus = False
+        self.dragging = False
         self.color = self.theme["normal_color"]
 
-    def draw(self, screen) -> None:
-        """_summary_
 
-        Args:
-            screen (_type_): _description_
-        """
-        self.image.fill(self.color)
-        screen.blit(self.image, self.rect)
-    
     def update(self, scale=1) -> None:
         """_summary_
 
@@ -87,6 +75,7 @@ class GUIComponent(pg.sprite.Sprite):
         if any(pressed):
             if self.hover:
                 if not self.focus:
+                    self.dragging = True
                     self.on_focus_enter()
                 self.focus = True
                 self.pressed = True
@@ -104,6 +93,9 @@ class GUIComponent(pg.sprite.Sprite):
                 if self.focus:
                     self.on_focus_exit()
                 self.focus = False
+
+            if self.dragging:
+                self.on_drag()
         else:
             if self.hover:
                 if self.pressed:
@@ -118,18 +110,85 @@ class GUIComponent(pg.sprite.Sprite):
                 if self.pressed_middle:
                     self.on_middle_click()
                     self.pressed_middle = False
+            self.dragging = False
 
-        if self.pressed:
-            self.color = (self.theme["pressed_color"])
-        elif self.hover:
-            self.color = (self.theme["hover_color"])
-        elif self.focus:
-            self.color = (self.theme["focus_color"])
-        else:
+        if not self.pressed and not self.hover and not self.focus:
             self.color = (self.theme["normal_color"])
 
+    def on_press(self):
+        self.color = (self.theme["pressed_color"])
 
-class Label(pg.sprite.Sprite):
+    def on_hover(self):
+        self.color = (self.theme["hover_color"])
+
+    def on_focus(self):
+        self.color = (self.theme["focus_color"])
+
+    
+    def move(self, pos):
+        """_summary_
+
+        Args:
+            pos (_type_): _description_
+        """
+        self.rect.move_ip(pos[0], pos[1])
+
+    def move_to(self, pos):
+        """_summary_
+
+        Args:
+            pos (_type_): _description_
+        """
+        horizontal_shift = pos[0]-self.rect.x
+        vertical_shift = pos[1]-self.rect.y
+        self.move((horizontal_shift,vertical_shift))
+
+
+class GUIComponent(Component, pg.sprite.Sprite):
+    """_summary_
+
+    Args:
+        pg (_type_): _description_
+    """
+    def __init__(self, pos : tuple, size : tuple, **kwargs):
+        """_summary_
+
+        Args:
+            pos (tuple): _description_
+            size (tuple): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        pg.sprite.Sprite.__init__(self)
+        Component.__init__(self, pos, size, **kwargs)
+
+        image = kwargs.get("image", None)
+        if image == None:
+            self.has_image = False
+            self.image = pg.Surface(size)
+            self.image.fill((123,30,73))
+        else:
+            self.has_image = True
+            self.image = image
+
+
+    def draw(self, screen) -> None:
+        """_summary_
+
+        Args:
+            screen (_type_): _description_
+        """
+        screen.blit(self.image, self.rect)
+
+    def update(self):
+        if not self.has_image:
+            self.image.fill(self.color)
+        Component.update(self)
+
+
+
+class Label(GUIComponent):
     """_summary_
 
     Args:
@@ -144,27 +203,17 @@ class Label(pg.sprite.Sprite):
             font (_type_): _description_
         """
         pg.sprite.Sprite.__init__(self)
-        size = (len(text)*9+10,20)
-        self.rect = pg.Rect(pos, size)
-        self.theme = kwargs.get("theme", BLACK)
-        self.text : str = text
         self.font = font
+        self.text : str = text
         self.text_size : tuple = font.size(text)
-        self.padding : int = kwargs.get("padding", 8)
+        self.padding : int = kwargs.get("padding", 0)
+        
+        GUIComponent.__init__(self, (pos[0] + self.padding, pos[1]), self.text_size, **kwargs)
         self.render()
+        self.has_image = True
 
     def render(self) -> None:
-        self.text_image = self.font.render(self.text, True, self.theme["text_color"])
-    
-    def draw(self, screen) -> None:
-        """_summary_
-
-        Args:
-            screen (_type_): _description_
-        """
-        pos = (self.rect.x + self.padding, self.rect.y + self.rect.height/2 - self.text_size[1]/2)
-        if pos[0] > 0 and pos[0] < screen.get_rect().width and pos[1] > 0 and pos[1] < screen.get_rect().height:
-            screen.blit(self.text_image, pos)
+        self.image = self.font.render(self.text, True, self.theme["text_color"])
     
     def set_text(self, text):
         """_summary_
@@ -175,7 +224,7 @@ class Label(pg.sprite.Sprite):
         self.text = str(text)
 
 
-class Button(GUIComponent, Label):
+class Button(GUIComponent):
     """_summary_
 
     Args:
@@ -191,8 +240,14 @@ class Button(GUIComponent, Label):
             font (_type_): _description_
             text (str, optional): _description_. Defaults to "".
         """
-        Label.__init__(self, pos, text, font, **kwargs)
         GUIComponent.__init__(self, pos, size, **kwargs)
+        kwargs.setdefault("padding", 8)
+        self.label = Label(pos, text, font, **kwargs)
+        self.label.rect.centery = self.rect.centery
+    
+    def update(self):
+        GUIComponent.update(self)
+        self.label.update()
     
     def draw(self, screen) -> None:
         """_summary_
@@ -201,7 +256,14 @@ class Button(GUIComponent, Label):
             screen (_type_): _description_
         """
         GUIComponent.draw(self, screen)
-        Label.draw(self, screen)
+        self.label.draw(screen)
+    
+    def move(self, pos):
+        GUIComponent.move(self, pos)
+        self.label.move(pos)
+
+    def set_text(self, text):
+        self.label.set_text(text)
 
 
 class Slider(GUIComponent):
@@ -228,10 +290,17 @@ class Slider(GUIComponent):
         self.pos_min = pos_min
         self.pos_max = pos_max
         
-        GUIComponent.__init__(self, ((pos_min[0]+pos_max[0])/2-size[0]/2,(pos_min[1]+pos_max[1])/2-size[1]/2), size, **kwargs)
+        GUIComponent.__init__(self, ((pos_min[0]+pos_max[0])/2-size[0]/2, (pos_min[1]+pos_max[1])/2-size[1]/2), size, **kwargs)
         self.range : tuple = value_range
         self.value : float = kwargs.get("default",(value_range[0] + value_range[1]) / 2)
         self.place_slider()
+
+    def move(self, pos):
+        GUIComponent.move(self, pos)
+        self.pos_min = self.pos_min[0] + pos[0], self.pos_min[1] + pos[1]
+        self.pos_max = self.pos_max[0] + pos[0], self.pos_max[1] + pos[1]
+        self.place_slider()
+    
     
     def place_slider(self) -> None:
         if self.pos_min[0] == self.pos_max[0]:
@@ -239,7 +308,7 @@ class Slider(GUIComponent):
         else:
             self.rect.centerx = map(self.value, self.range[0], self.range[1], self.pos_min[0], self.pos_max[0])
     
-    def on_press(self) -> None:
+    def on_drag(self) -> None:
         pos = pg.mouse.get_pos()
         pos_min = self.pos_min
         pos_max = self.pos_max
@@ -292,6 +361,10 @@ class InputText(GUIComponent):
         self.set_text(kwargs.get("text", ""))
         self.padding : int = kwargs.get("padding", 8)
         self.render(self.text)
+        self.text_pos = (self.rect.x + self.padding, self.rect.y + self.rect.height/2 - self.font_height/2)
+    
+    def move(self, pos):
+        GUIComponent.move(self, pos)
         self.text_pos = (self.rect.x + self.padding, self.rect.y + self.rect.height/2 - self.font_height/2)
 
     def render(self, text) -> None:
@@ -372,3 +445,44 @@ class InputText(GUIComponent):
     
     def get_text(self) -> str:
         return self.text
+
+
+class Panel(pg.sprite.Group, Component):
+    """_summary_
+
+    Args:
+        pg (_type_): _description_
+        Component (_type_): _description_
+    """
+    def __init__(self, pos: tuple, size: tuple, **kwargs):
+        Component.__init__(self, pos, size, **kwargs)
+        pg.sprite.Group.__init__(self)
+    
+    def update(self, *args, **kwargs):
+        Component.update(self, *args, **kwargs)
+        pg.sprite.Group.update(self, *args, **kwargs)
+    
+    
+    def move(self, pos):
+        """_summary_
+
+        Args:
+            pos (_type_): _description_
+        """
+        Component.move(self, pos)
+        for child in self.sprites():
+            child.move(pos)
+    
+    def draw(self, screen):
+        for child in self.sprites():
+            child.draw(screen)
+
+    def move_to(self, pos):
+        """_summary_
+
+        Args:
+            pos (_type_): _description_
+        """
+        horizontal_shift = pos[0]-self.rect.x
+        vertical_shift = pos[1]-self.rect.y
+        self.move((horizontal_shift,vertical_shift))
