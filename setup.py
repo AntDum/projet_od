@@ -6,7 +6,7 @@ setup(name='Projet_OD',
       author='OD',
       author_email='OD',
       url='',
-      packages=['projet_od', 'projet_od.gui', 'projet_od.state', 'projet_od.particule'],
+      packages=['projet_od', 'projet_od.gui', 'projet_od.state', 'projet_od.particule', 'projet_od.screen', 'projet_od.physics'],
       requires=['pygame'],
       python_requires=">=3.6"
      )

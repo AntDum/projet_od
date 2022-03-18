@@ -1,5 +1,5 @@
 import pygame
-import particleSystem
+import projet_od.particule.particleSystem as particleSystem
 from random import randint, uniform
 
 
@@ -46,7 +46,7 @@ class FireWork(particleSystem.ParticleSystem):
             self.cleanEmpty(screen)
             self.has_finish = True
 
-        super().draw(screen)
+        return super().draw(screen)
 
 
 class Dust(particleSystem.ParticleSystem):
@@ -73,7 +73,7 @@ class Dust(particleSystem.ParticleSystem):
 
         if self.count >= self.life_time:
             self.remove_first(screen)
-        super().draw(screen)
+        return super().draw(screen)
         
 
 class Explosion(particleSystem.ParticleSystem):

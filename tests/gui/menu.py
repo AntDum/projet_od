@@ -1,11 +1,14 @@
 import pygame as pg
 from projet_od.gui import *
+from projet_od.screen import BaseScreen
 
 pg.init()
 pg.display.init()
 h = 480
 w = 720
-screen = pg.display.set_mode((w,h))
+screen = BaseScreen(w,h)
+
+screen.make_background((125,125,125))
 
 font = pg.font.SysFont("Comic Sans MS", 26, False, False)
 
@@ -38,7 +41,7 @@ while run:
 
     p_menu.update()
     
-    screen.fill((125,125,125))
+    screen.surface.fill((125,125,125))
 
     p_menu.draw(screen)
 

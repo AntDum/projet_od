@@ -178,7 +178,6 @@ class Component:
         self.move_to((component.rect.centerx - self.rect.width/2, component.rect.centery - self.rect.height/2))
 
 
-
 class GUIComponent(Component, pg.sprite.Sprite):
     """_summary_
 
@@ -220,7 +219,6 @@ class GUIComponent(Component, pg.sprite.Sprite):
         if not self.has_image:
             self.image.fill(self.color)
         Component.update(self)
-
 
 
 class Label(GUIComponent):
@@ -367,9 +365,13 @@ class Slider(GUIComponent):
         Args:
             screen (_type_): _description_
         """
-        pg.draw.line(screen, self.theme["normal_color"], self.pos_min, self.pos_max)
-        pg.draw.rect(screen, self.color, self.rect)
-        
+        if isinstance(screen, pg.Surface):
+            pg.draw.line(screen, self.theme["normal_color"], self.pos_min, self.pos_max)
+            pg.draw.rect(screen, self.color, self.rect)
+        else:
+            pg.draw.line(screen.surface, self.theme["normal_color"], self.pos_min, self.pos_max)
+            pg.draw.rect(screen.surface, self.color, self.rect)
+
     def get_value(self):
         """_summary_
 
@@ -377,7 +379,8 @@ class Slider(GUIComponent):
             _type_: _description_
         """
         return round(self.value, 3)
-        
+
+
 class InputText(GUIComponent):
     """_summary_
 
