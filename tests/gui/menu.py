@@ -19,7 +19,7 @@ b2_name = "Quit"
 
 p_menu = Panel((0,0), (w,h), theme=theme)
 
-l_title = Label((0,50), name, font, theme=theme)
+l_title = Label((0,50), name, font, theme=theme, text_color=(255,0,0))
 l_title.center_x(p_menu)
 
 b_play = Button((0,150), (150, 50), font, b1_name, theme=theme)

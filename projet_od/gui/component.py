@@ -21,10 +21,13 @@ class Component:
         def empty():
             pass
         def get(attr):
+            g = None
             if attr in kwargs:
-                return kwargs[attr]
-            if hasattr(self, attr):
-                return getattr(self, attr)
+                g = kwargs[attr]
+            elif hasattr(self, attr):
+                g = getattr(self, attr)
+            if g != None:
+                return g
             return empty
 
         self.theme = kwargs.get("theme", RED)
@@ -53,7 +56,7 @@ class Component:
         self.hover = False
         self.focus = False
         self.dragging = False
-        self.color = self.theme["normal_color"]
+        self.color = kwargs.get("color", self.theme["normal_color"])
 
 
     def update(self, scale=1) -> None:
@@ -240,13 +243,17 @@ class Label(GUIComponent):
         self.text : str = text
         self.text_size : tuple = font.size(text)
         self.padding : int = kwargs.get("padding", 0)
-        
+        self.on_hover = None
+        self.on_press = None
+        self.on_focus = None
+        self.on_pre_update = None
         GUIComponent.__init__(self, (pos[0] + self.padding, pos[1]), self.text_size, **kwargs)
+        self.text_color = kwargs.get("text_color", self.theme["text_color"])
         self.render()
         self.has_image = True
 
     def render(self) -> None:
-        self.image = self.font.render(self.text, True, self.theme["text_color"])
+        self.image = self.font.render(self.text, True, self.text_color)
     
     def set_text(self, text):
         """_summary_
@@ -273,8 +280,9 @@ class Button(GUIComponent):
             font (_type_): _description_
             text (str, optional): _description_. Defaults to "".
         """
-        GUIComponent.__init__(self, pos, size, **kwargs)
+        self.on_focus = None
         kwargs.setdefault("padding", 8)
+        GUIComponent.__init__(self, pos, size, **kwargs)
         self.label = Label(pos, text, font, **kwargs)
         self.label.rect.centery = self.rect.centery
     
@@ -282,8 +290,6 @@ class Button(GUIComponent):
         GUIComponent.update(self)
         self.label.update()
     
-    def on_focus(self):
-        pass
 
     def draw(self, screen) -> None:
         """_summary_
@@ -300,6 +306,9 @@ class Button(GUIComponent):
 
     def set_text(self, text):
         self.label.set_text(text)
+    
+    def center_text(self):
+        self.label.center(self)
 
 
 class Slider(GUIComponent):
