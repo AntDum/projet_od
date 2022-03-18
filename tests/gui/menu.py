@@ -12,7 +12,7 @@ screen.make_background((125,125,125))
 
 font = pg.font.SysFont("Comic Sans MS", 26, False, False)
 
-theme = WHITE
+theme = THEME_WHITE
 name = "MENU"
 b1_name = "Play"
 b2_name = "Quit"

@@ -11,11 +11,11 @@ font = pg.font.SysFont("Comic Sans MS", 26, False, False)
 
 gc = GUIComponent((10, 10), (150, 150))
 
-but = Button((170,10), (150, 50), font, "Button", theme=WHITE)
+but = Button((170,10), (150, 50), font, "Button")
 
-slider = Slider((170, 100), (270, 100), (25,50), (0,100), theme=WHITE)
+slider = Slider((170, 100), (270, 100), (25,50), (0,100))
 
-it = InputText((350, 10), (180,50), font, theme=WHITE, text="Input")
+it = InputText((350, 10), (180,50), font, text="Input")
 
 # gc.on_click = lambda : print("Hello")
 # it.on_change = lambda : print(it.get_text())

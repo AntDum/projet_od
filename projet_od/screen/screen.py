@@ -4,6 +4,7 @@ class BaseScreen:
     def __init__(self, w, h):
         self.surface = pg.display.set_mode((w,h))
         self.blit = self.surface.blit
+        self.fill = self.surface.fill
         self.background = None
         self.width = w
         self.height = h

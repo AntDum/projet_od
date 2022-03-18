@@ -14,9 +14,9 @@ gc = GUIComponent((10, 10), (150, 150))
 
 lb = Label((20,300), "Mais non", font)
 
-but = Button((170,10), (150, 50), font, "Button", theme=WHITE)
+but = Button((170,10), (150, 50), font, "Button")
 
-slider = Slider((180, 100), (300, 100), (25,50), (0,100), theme=WHITE)
+slider = Slider((180, 100), (300, 100), (25,50), (0,100))
 
 pn = Panel((0,0), (480,720))
 

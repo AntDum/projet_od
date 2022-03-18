@@ -3,17 +3,17 @@ from projet_od.gui.theme import *
 from projet_od.utils import clamp, map
 
 class Component:
-    """_summary_
-    """
+    """Basic component for graphic, interactif component."""
     def __init__(self, pos : tuple, size : tuple, **kwargs):
-        """_summary_
+        """Basic component use in every gui component.
 
         Args:
-            pos (tuple): _description_
-            size (tuple): _description_
+            pos (tuple): (x, y) position from top left
+            size (tuple): (width, height) size of the component
 
-        Returns:
-            _type_: _description_
+        Kwargs:
+            theme (theme) : Default WHITE
+            color (Color) : Default theme.default_color
         """
 
         self.rect = pg.Rect(pos, size)
@@ -30,7 +30,7 @@ class Component:
                 return g
             return empty
 
-        self.theme = kwargs.get("theme", RED)
+        self.theme = kwargs.get("theme", THEME)
 
         self.on_click = get("on_click")
         self.on_left_click = get("on_left_click")
@@ -56,14 +56,14 @@ class Component:
         self.hover = False
         self.focus = False
         self.dragging = False
-        self.color = kwargs.get("color", self.theme["normal_color"])
+        self.color = kwargs.get("color", self.theme.default_color)
 
 
     def update(self, scale=1) -> None:
-        """_summary_
+        """Update the widget, call the registered event
 
         Args:
-            scale (int, optional): _description_. Defaults to 1.
+            scale (int, optional): Scale the widget. Defaults to 1.
         """
         self.on_pre_update()
         mouse = pg.mouse
@@ -125,77 +125,75 @@ class Component:
         self.on_post_update()
 
     def on_pre_update(self):
-        self.color = (self.theme["normal_color"])
+        self.color = (self.theme.default_color)
 
     def on_press(self):
-        self.color = (self.theme["pressed_color"])
+        self.color = (self.theme.pressed_color)
 
     def on_hover(self):
-        self.color = (self.theme["hover_color"])
+        self.color = (self.theme.hover_color)
 
     def on_focus(self):
-        self.color = (self.theme["focus_color"])
+        self.color = (self.theme.focus_color)
 
     
-    def move(self, pos):
-        """_summary_
+    def move(self, offset : tuple):
+        """Move the widget from an offset
 
         Args:
-            pos (_type_): _description_
+            offset (tuple): (x,y)
         """
-        self.rect.move_ip(pos[0], pos[1])
+        self.rect.move_ip(offset[0], offset[1])
 
-    def move_to(self, pos):
-        """_summary_
+    def move_to(self, pos : tuple):
+        """Move the widget to a position
 
         Args:
-            pos (_type_): _description_
+            pos (tuple): (x,y)
         """
         horizontal_shift = pos[0]-self.rect.x
         vertical_shift = pos[1]-self.rect.y
         self.move((horizontal_shift,vertical_shift))
     
     def center_x(self, component):
-        """_summary_
+        """Center the widget to the center x of the other component
 
         Args:
-            component (_type_): _description_
+            component (Component): An other component
         """
         self.move_to((component.rect.centerx - self.rect.width/2, self.rect.y))
 
     def center_y(self, component):
-        """_summary_
+        """Center the widget to the center y of the other component
 
         Args:
-            component (_type_): _description_
+            component (Component): An other component
         """
         self.move_to((self.rect.x, component.rect.centery - self.rect.height/2))
     
 
     def center(self, component):
-        """_summary_
+        """Center the widget to the center x and y of the other component
 
         Args:
-            component (_type_): _description_
+            component (Component): An other component
         """
         self.move_to((component.rect.centerx - self.rect.width/2, component.rect.centery - self.rect.height/2))
 
 
 class GUIComponent(Component, pg.sprite.Sprite):
-    """_summary_
-
-    Args:
-        pg (_type_): _description_
-    """
+    """Blank graphical component."""
     def __init__(self, pos : tuple, size : tuple, **kwargs):
-        """_summary_
+        """A first use of an component.
 
         Args:
-            pos (tuple): _description_
-            size (tuple): _description_
-
-        Returns:
-            _type_: _description_
+            pos (tuple): (x, y) position.
+            size (tuple): (width, height) size of the component.
+        
+        Kwargs:
+            image (Surface): an image for the component.
+            theme (theme) : Default WHITE
+            color (Color) : Default theme['default_color']
         """
         pg.sprite.Sprite.__init__(self)
         Component.__init__(self, pos, size, **kwargs)
@@ -211,10 +209,10 @@ class GUIComponent(Component, pg.sprite.Sprite):
 
 
     def draw(self, screen) -> None:
-        """_summary_
+        """Draw the image, to the rect on the screen.
 
         Args:
-            screen (_type_): _description_
+            screen (Surface | Screen): a surface to draw to.
         """
         screen.blit(self.image, self.rect)
 
@@ -225,18 +223,20 @@ class GUIComponent(Component, pg.sprite.Sprite):
 
 
 class Label(GUIComponent):
-    """_summary_
-
-    Args:
-        pg (_type_): _description_
-    """
+    """A label widget"""
     def __init__(self, pos : tuple, text : str, font, **kwargs):
-        """_summary_
+        """A basic widget to show text
 
         Args:
-            pos (tuple): _description_
-            text (str): _description_
-            font (_type_): _description_
+            pos (tuple): (x, y) position from top left
+            text (str): text of the label
+            font (font): the font of the text
+        
+        Kwargs:
+            padding (int) : padding from left
+            theme (theme) : Default WHITE
+            text_color (Color) : color of the text
+            color (Color) : Default theme['default_color']
         """
         pg.sprite.Sprite.__init__(self)
         self.font = font
@@ -248,40 +248,38 @@ class Label(GUIComponent):
         self.on_focus = None
         self.on_pre_update = None
         GUIComponent.__init__(self, (pos[0] + self.padding, pos[1]), self.text_size, **kwargs)
-        self.text_color = kwargs.get("text_color", self.theme["text_color"])
+        self.text_color = kwargs.get("text_color", self.theme.text_color)
         self.render()
         self.has_image = True
 
     def render(self) -> None:
         self.image = self.font.render(self.text, True, self.text_color)
     
-    def set_text(self, text):
-        """_summary_
-
-        Args:
-            text (_type_): _description_
+    def set_text(self, text : str):
+        """Set text
         """
         self.text = str(text)
 
 
 class Button(GUIComponent):
-    """_summary_
-
-    Args:
-        GUIComponent (_type_): _description_
-        Label (_type_): _description_
-    """
+    """A button widget"""
     def __init__(self, pos : tuple, size : tuple, font, text="", **kwargs):
-        """_summary_
+        """
 
         Args:
-            pos (tuple): _description_
-            size (tuple): _description_
-            font (_type_): _description_
-            text (str, optional): _description_. Defaults to "".
+            pos (tuple): (x, y) position from top left
+            size (tuple): (width, height) size of the component
+            font (font): the font of the text
+            text (str, optional): text on the button. Defaults to "".
+        
+        Kwargs:
+            padding (int) : padding from left
+            theme (theme) : Default WHITE
+            text_color (Color) : color of the text
+            color (Color) : Default theme['default_color']
         """
         self.on_focus = None
-        kwargs.setdefault("padding", 8)
+        kwargs.setdefault("padding", self.theme.padding)
         GUIComponent.__init__(self, pos, size, **kwargs)
         self.label = Label(pos, text, font, **kwargs)
         self.label.rect.centery = self.rect.centery
@@ -292,11 +290,6 @@ class Button(GUIComponent):
     
 
     def draw(self, screen) -> None:
-        """_summary_
-
-        Args:
-            screen (_type_): _description_
-        """
         GUIComponent.draw(self, screen)
         self.label.draw(screen)
     
@@ -312,11 +305,7 @@ class Button(GUIComponent):
 
 
 class Slider(GUIComponent):
-    """_summary_
-
-    Args:
-        GUIComponent (_type_): _description_
-    """
+    """A slider widget"""
     def __init__(self, pos_min : tuple, pos_max : tuple, size : tuple, value_range : tuple, **kwargs):
         """_summary_
 
@@ -326,8 +315,13 @@ class Slider(GUIComponent):
             size (tuple): _description_
             value_range (tuple): _description_
 
+        Kwargs:
+            default (float) : default value of the slide
+            theme (theme) : Default WHITE
+            color (Color) : Default theme['default_color']
+
         Raises:
-            ValueError: _description_
+            ValueError: can't be diagonale
         """
         if (pos_min[0] != pos_max[0]) and (pos_min[1] != pos_max[1]):
             raise ValueError("Need to be vertical or horizontal, not diagonal")
@@ -369,47 +363,42 @@ class Slider(GUIComponent):
         
         
     def draw(self, screen):
-        """_summary_
-
-        Args:
-            screen (_type_): _description_
-        """
         if isinstance(screen, pg.Surface):
-            pg.draw.line(screen, self.theme["normal_color"], self.pos_min, self.pos_max)
+            pg.draw.line(screen, self.theme.default_color, self.pos_min, self.pos_max)
             pg.draw.rect(screen, self.color, self.rect)
         else:
-            pg.draw.line(screen.surface, self.theme["normal_color"], self.pos_min, self.pos_max)
+            pg.draw.line(screen.surface, self.theme.default_color, self.pos_min, self.pos_max)
             pg.draw.rect(screen.surface, self.color, self.rect)
 
     def get_value(self):
-        """_summary_
-
-        Returns:
-            _type_: _description_
+        """Return the value of the slide
         """
         return round(self.value, 3)
 
 
 class InputText(GUIComponent):
-    """_summary_
-
-    Args:
-        GUIComponent (_type_): _description_
-    """
+    """A inputtext widget"""
     def __init__(self, pos : tuple, size : tuple, font,**kwargs):
-        """_summary_
-
+        """
         Args:
-            pos (tuple): _description_
-            size (tuple): _description_
-            font (_type_): _description_
+            pos (tuple): (x, y) position from top left
+            size (tuple): (width, height) size of the component
+            font (font): the font of the text
+        
+        Kwargs:
+            padding (int) : padding from left
+            text (str) : default text
+            theme (theme) : Default WHITE
+            color (Color) : Default theme['default_color']
+            text_color (Color) : color of the text
         """
         GUIComponent.__init__(self, pos, size, **kwargs)
         pg.key.set_text_input_rect(self.rect)
         self.font = font
         self.font_height = self.font.get_height()
         self.set_text(kwargs.get("text", ""))
-        self.padding : int = kwargs.get("padding", 8)
+        self.padding : int = kwargs.get("padding", self.theme.padding)
+        self.text_color = kwargs.get("text_color", self.theme.text_color)
         self.render(self.text)
         self.text_pos = (self.rect.x + self.padding, self.rect.y + self.rect.height/2 - self.font_height/2)
     
@@ -418,7 +407,7 @@ class InputText(GUIComponent):
         self.text_pos = (self.rect.x + self.padding, self.rect.y + self.rect.height/2 - self.font_height/2)
 
     def render(self, text) -> None:
-        self.text_image = self.font.render(text, True, self.theme["text_color"])
+        self.text_image = self.font.render(text, True, self.text_color)
         self.prev_text = text
     
     def on_focus_enter(self):
@@ -428,11 +417,6 @@ class InputText(GUIComponent):
         pg.key.stop_text_input()
     
     def update(self, events) -> None:
-        """_summary_
-
-        Args:
-            events (_type_): _description_
-        """
         GUIComponent.update(self)
         if self.focus:
             for event in events:
@@ -464,11 +448,6 @@ class InputText(GUIComponent):
                     self.on_change()
                     
     def draw(self, screen):
-        """_summary_
-
-        Args:
-            screen (_type_): _description_
-        """
         GUIComponent.draw(self, screen)
         if self.focus:
             text = self.text[: self.imePos] + '|' + self.text[self.imePos:]
@@ -498,18 +477,17 @@ class InputText(GUIComponent):
 
 
 class Panel(pg.sprite.Group, Component):
-    """_summary_
-
-    Args:
-        pg (_type_): _description_
-        Component (_type_): _description_
-    """
+    """A panel widget"""
     def __init__(self, pos: tuple, size: tuple, **kwargs):
-        """_summary_
+        """
 
         Args:
-            pos (tuple): _description_
-            size (tuple): _description_
+            pos (tuple): (x, y) position from top left
+            size (tuple): (width, height) size of the component
+
+        Kwargs:
+            theme (theme) : Default WHITE
+            color (Color) : Default theme['default_color']
         """
         Component.__init__(self, pos, size, **kwargs)
         pg.sprite.Group.__init__(self)
@@ -518,13 +496,7 @@ class Panel(pg.sprite.Group, Component):
         Component.update(self, *args, **kwargs)
         pg.sprite.Group.update(self, *args, **kwargs)
     
-    
     def move(self, pos):
-        """_summary_
-
-        Args:
-            pos (_type_): _description_
-        """
         Component.move(self, pos)
         for child in self.sprites():
             child.move(pos)
@@ -534,11 +506,6 @@ class Panel(pg.sprite.Group, Component):
             child.draw(screen)
 
     def move_to(self, pos):
-        """_summary_
-
-        Args:
-            pos (_type_): _description_
-        """
         horizontal_shift = pos[0]-self.rect.x
         vertical_shift = pos[1]-self.rect.y
         self.move((horizontal_shift,vertical_shift))
