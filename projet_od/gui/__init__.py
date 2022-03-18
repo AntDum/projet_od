@@ -1,2 +1,1 @@
-import projet_od.gui.component
-import projet_od.gui.theme
+from projet_od.gui.component import *

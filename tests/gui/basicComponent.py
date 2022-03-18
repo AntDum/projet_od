@@ -1,5 +1,5 @@
 import pygame as pg
-from projet_od.gui.component import *
+from projet_od.gui import *
 
 pg.init()
 pg.display.init()

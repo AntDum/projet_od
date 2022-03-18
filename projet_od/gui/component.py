@@ -33,7 +33,9 @@ class Component:
         self.on_left_click = get("on_left_click")
         self.on_right_click = get("on_right_click")
         self.on_middle_click = get("on_middle_click")
+        self.on_hover_enter = get("on_hover_enter")
         self.on_hover = get("on_hover")
+        self.on_hover_exit = get("on_hover_exit")
         self.on_press = get("on_press")
         self.on_drag = get("on_drag")
         self.on_change = get("on_change")
@@ -42,6 +44,8 @@ class Component:
         self.on_press_middle = get("on_press_middle")
         self.on_focus_enter = get("on_focus_enter")
         self.on_focus_exit = get("on_focus_exit")
+        self.on_pre_update = get("on_pre_update")
+        self.on_post_update = get("on_post_update")
         self.pressed = False
         self.pressed_left = False
         self.pressed_right = False
@@ -58,13 +62,16 @@ class Component:
         Args:
             scale (int, optional): _description_. Defaults to 1.
         """
+        self.on_pre_update()
         mouse = pg.mouse
         rect = pg.Rect(self.rect.x, self.rect.y, self.rect.width*scale, self.rect.height*scale)
         if rect.collidepoint(mouse.get_pos()):
+            self.on_hover()
             if not self.hover:
-                self.on_hover()
+                self.on_hover_enter()
             self.hover = True
         else:
+            self.on_hover_exit()
             self.hover = False
             self.pressed = False
             self.pressed_left = False
@@ -112,8 +119,10 @@ class Component:
                     self.pressed_middle = False
             self.dragging = False
 
-        if not self.pressed and not self.hover and not self.focus:
-            self.color = (self.theme["normal_color"])
+        self.on_post_update()
+
+    def on_pre_update(self):
+        self.color = (self.theme["normal_color"])
 
     def on_press(self):
         self.color = (self.theme["pressed_color"])
@@ -142,6 +151,32 @@ class Component:
         horizontal_shift = pos[0]-self.rect.x
         vertical_shift = pos[1]-self.rect.y
         self.move((horizontal_shift,vertical_shift))
+    
+    def center_x(self, component):
+        """_summary_
+
+        Args:
+            component (_type_): _description_
+        """
+        self.move_to((component.rect.centerx - self.rect.width/2, self.rect.y))
+
+    def center_y(self, component):
+        """_summary_
+
+        Args:
+            component (_type_): _description_
+        """
+        self.move_to((self.rect.x, component.rect.centery - self.rect.height/2))
+    
+
+    def center(self, component):
+        """_summary_
+
+        Args:
+            component (_type_): _description_
+        """
+        self.move_to((component.rect.centerx - self.rect.width/2, component.rect.centery - self.rect.height/2))
+
 
 
 class GUIComponent(Component, pg.sprite.Sprite):
@@ -249,6 +284,9 @@ class Button(GUIComponent):
         GUIComponent.update(self)
         self.label.update()
     
+    def on_focus(self):
+        pass
+
     def draw(self, screen) -> None:
         """_summary_
 
@@ -455,6 +493,12 @@ class Panel(pg.sprite.Group, Component):
         Component (_type_): _description_
     """
     def __init__(self, pos: tuple, size: tuple, **kwargs):
+        """_summary_
+
+        Args:
+            pos (tuple): _description_
+            size (tuple): _description_
+        """
         Component.__init__(self, pos, size, **kwargs)
         pg.sprite.Group.__init__(self)
     

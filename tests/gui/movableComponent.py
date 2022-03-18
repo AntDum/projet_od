@@ -1,5 +1,5 @@
 import pygame as pg
-from projet_od.gui.component import *
+from projet_od.gui import *
 
 pg.init()
 pg.display.init()
@@ -31,8 +31,6 @@ while run:
     for event in events:
         if event.type == pg.QUIT:
             run = False
-        if event.type == pg.KEYDOWN:
-            print(but.label.rect)
 
     pn.update()
     
