@@ -258,7 +258,10 @@ class Label(GUIComponent):
     def set_text(self, text : str):
         """Set text
         """
+        prev = self.text
         self.text = str(text)
+        if self.text != prev:
+            self.render()
 
 
 class Button(GUIComponent):

@@ -27,14 +27,3 @@ class Body(pg.sprite.Sprite):
         rect.append(screen.blit(self.image, self.rect))
         pg.display.update(rect)
         
-class DummyTarget:
-    def __init__(self, x, y, speed=1) -> None:
-        self.rect = pg.Rect(x,y,0,0)
-        self.speed = 1
-
-    def update(self, dt=1):
-        keys = pg.key.get_pressed()
-        dx = keys[pg.K_RIGHT] - keys[pg.K_LEFT]
-        dy = keys[pg.K_DOWN] - keys[pg.K_UP]
-        s = dt * self.speed
-        self.rect.move_ip(dx * s, dy * s)

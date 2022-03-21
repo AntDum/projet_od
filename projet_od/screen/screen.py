@@ -29,6 +29,10 @@ class CameraScreen(BaseScreen):
     def blit_cam(self, image, rect):
         return self.blit(image, rect.move(self.camera.topleft))
     
+    def from_cam(self, rect):
+        rect = pg.Rect(rect)
+        return rect.move(self.camera.topleft)
+    
     def set_camera_point(self, pos):
         x = -pos[0] + self.width//2
         y = -pos[1] + self.height//2
@@ -51,6 +55,26 @@ class CameraScreen(BaseScreen):
             target : has a rect
         """
         self.set_camera_point((target.rect.x, target.rect.y))
+
+
+class DummyTarget:
+    def __init__(self, x, y, speed=1) -> None:
+        self.rect = pg.Rect(x,y,0,0)
+        self.speed = 1
+
+    def update(self, dt=1):
+        keys = pg.key.get_pressed()
+        dx = keys[pg.K_RIGHT] - keys[pg.K_LEFT]
+        dy = keys[pg.K_DOWN] - keys[pg.K_UP]
+        s = dt * self.speed
+        self.rect.move_ip(dx * s, dy * s)
+    
+    def move(self, x, y):
+        self.rect.move_ip(x,y)
+    
+    def move_to(self, x, y):
+        self.rect.x = x
+        self.rect.y = y
 
 class DrawableScreen(BaseScreen):
     def __init__(self, w, h):

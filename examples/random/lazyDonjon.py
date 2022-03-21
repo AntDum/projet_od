@@ -1,6 +1,7 @@
 import pygame as pg
 from projet_od.screen import CameraScreen, DummyTarget
 from projet_od.utils import clamp
+from projet_od.gui import Label
 
 pg.init()
 w,h = 720,480
@@ -25,39 +26,59 @@ class Room:
             return (self.x, self.y) == (__o.x, __o.y)
         return False
 
+class LazyRoom(Room):
+    def __init__(self, x, y, openning=None) -> None:
+        super().__init__(x, y, openning)
+        self.loaded = False
+
 class RoomGenerator:
     def next(self, x : int, y : int, rules : list[bool|None], dir : int, *args, **kwargs) -> Room:
         return Room(x, y)
 
-class Donjon:
+class LazyDonjon:
     def __init__(self, generator : RoomGenerator) -> None:
-        f = generator.next(x=0,y=0, rules=[None for _ in range(4)], dir=-1)
-        self.rooms = {(0,0):f}
-        stack = [f]
-        while len(stack) != 0:
-            room = stack.pop(0)
-            x, y = room.x, room.y
-            
-            for i, (xr,yr) in enumerate(((x-1,y),(x, y-1),(x+1,y),(x,y+1))):
-                if room.openning[i] and room.next_room[i] == None:
-                    surrounding = [self.rooms.get(k, None) for k in ((xr-1,yr),(xr, yr-1),(xr+1,yr),(xr,yr+1))]
-                    rules = [r.openning[(j+2)%4] if r != None else None for j, r in enumerate(surrounding)]
+        self.generator = generator
+        self.rooms = {}
+        self.load(0,0)
+    
+    def get(self, x, y):
+        room = self.rooms.get((x,y), None)
+        if room == None or room.loaded == False:
+            self.load(x,y)
+        return room
+    
+    def load(self, x, y):
+        if (x,y) not in self.rooms:
+            surrounding = [self.rooms.get(k, None) for k in ((x-1,y),(x, y-1),(x+1,y),(x,y+1))]
+            rules = [r.openning[(j+2)%4] if r != None else None for j, r in enumerate(surrounding)]
+            room = generator.next(x,y, rules=rules, dir=-1)
+            self.rooms[(x,y)] = room
+        else:
+            room = self.rooms[(x,y)]
+        x, y = room.x, room.y
+        room.loaded = True
 
-                    r = generator.next(x=xr, y=yr, dir=i, rules=rules)
 
-                    self.rooms[(xr,yr)] = r
+        # Pre load the next room
+        for i, (xr,yr) in enumerate(((x-1,y),(x, y-1),(x+1,y),(x,y+1))):
+            if room.openning[i] and room.next_room[i] == None and (xr,yr) not in self.rooms:
+                surrounding = [self.rooms.get(k, None) for k in ((xr-1,yr),(xr, yr-1),(xr+1,yr),(xr,yr+1))]
+                rules = [r.openning[(j+2)%4] if r != None else None for j, r in enumerate(surrounding)]
 
-                    for j, sr in enumerate(surrounding):
-                        if sr != None:
-                            sr.next_room[(j+2)%4] = r
-                            r.next_room[j] = sr
-                    stack.append(r)
+                r = generator.next(x=xr, y=yr, dir=i, rules=rules)
+
+                self.rooms[(xr,yr)] = r
+
+                for j, sr in enumerate(surrounding):
+                    if sr != None:
+                        sr.next_room[(j+2)%4] = r
+                        r.next_room[j] = sr
 
 size = 30
 factor = .4
 from random import random
 
-class DrawRoom(Room):
+class DrawRoom(LazyRoom):
     def __init__(self, x, y, color, openning) -> None:
         super().__init__(x, y, openning)
         self.image = pg.Surface((30,30))
@@ -86,13 +107,14 @@ class ColorRoomGenerator(RoomGenerator):
         return tuple(int(clamp(random()*255, 30, 230)) for _ in range(3))
 
     def next(self, x, y, rules, dir=-1 , **kwargs):
-        if dir == -1:
+        if all(i==None for i in rules):
             r = DrawRoom(x,y, (255,)*3, openning=list((True,)*4))
             r.render()
             return r
         
         op = [random() < factor for _ in range(4)]
-
+        if not any(op):
+            op = [True for _ in op]
         r = DrawRoom(x,y,self.randomColor(), openning=op)
         for i, rule in enumerate(rules):
             if rule != None:
@@ -102,7 +124,7 @@ class ColorRoomGenerator(RoomGenerator):
         return r
         
 
-class DrawDonjon(Donjon):
+class DrawDonjon(LazyDonjon):
     def __init__(self, generator: RoomGenerator) -> None:
         super().__init__(generator)
     
@@ -113,7 +135,11 @@ class DrawDonjon(Donjon):
 generator = ColorRoomGenerator()
 target = DummyTarget(0, 0)
 donjon = DrawDonjon(generator)
+x, y = 0,0
 
+font = pg.font.SysFont("Comic Sans Ms", 26)
+
+lb = Label((10, 10), f"{x}, {y}", font, text_color=(255,255,255))
 
 run = True
 while run:
@@ -124,12 +150,32 @@ while run:
             if event.key == pg.K_SPACE:
                 donjon.__init__(generator)
                 target.move_to(0,0)
+            r = donjon.get(x,y)
+            if event.key == pg.K_LEFT:
+                if r.openning[0]:
+                    x -= 1
+            if event.key == pg.K_UP:
+                if r.openning[1]:
+                    y -= 1
+            if event.key == pg.K_RIGHT:
+                if r.openning[2]:
+                    x += 1
+            if event.key == pg.K_DOWN:
+                if r.openning[3]:
+                    y += 1
 
-    target.update()
+            donjon.load(x,y)
+            target.move_to(x*size,y*size)
+            lb.set_text(f"{x}, {y}")
+
+
     screen.update_camera(target)
-    
+    lb.update()
     screen.fill((25,25,25))
+    
     donjon.draw(screen)
+    pg.draw.rect(screen.surface, (255,0,0), screen.from_cam(((x*size + size/4, y*size + size/4),(size/2,size/2))))
+    lb.draw(screen)
 
     pg.display.update()
 
