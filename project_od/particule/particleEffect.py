@@ -1,5 +1,5 @@
 import pygame
-import projet_od.particule.particleSystem as particleSystem
+import project_od.particule.particleSystem as particleSystem
 from random import randint, uniform
 
 

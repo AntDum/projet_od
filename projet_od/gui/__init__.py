@@ -1,1 +1,0 @@
-from projet_od.gui.component import *

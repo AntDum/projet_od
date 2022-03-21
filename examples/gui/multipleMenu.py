@@ -1,6 +1,6 @@
 import pygame as pg
-from projet_od.gui import Panel, Button, Label, THEME_WHITE
-from projet_od.screen import BaseScreen
+from project_od.gui import Panel, Button, Label, THEME_WHITE
+from project_od.screen import BaseScreen
 
 pg.init()
 

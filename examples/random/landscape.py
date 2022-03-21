@@ -1,7 +1,7 @@
 from turtle import st
 import pygame as pg
-from projet_od.utils import Perlin
-from projet_od.screen import DrawableScreen
+from project_od.utils import Perlin
+from project_od.screen import DrawableScreen
 
 import time
 

@@ -3,19 +3,19 @@ from distutils.core import setup
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-setup(name='Projet_OD-AntDum',
+setup(name='project_od-AntDum',
       version='1.0.1',
       description='Tools for making game with pygame',
       author='AntDum',
       long_description=long_description,
       long_description_content_type="text/markdown",
       author_email='',
-      url='https://github.com/AntDum/projet_od',
+      url='https://github.com/AntDum/project_od',
       project_urls={
-        "Bug Tracker": "https://github.com/AntDum/projet_od/issues",
-        "Source": 'https://github.com/AntDum/projet_od'
+        "Bug Tracker": "https://github.com/AntDum/project_od/issues",
+        "Source": 'https://github.com/AntDum/project_od'
       },
-      packages=['projet_od', 'projet_od.gui', 'projet_od.particule', 'projet_od.screen', 'projet_od.physics', 'projet_od.map'],
+      packages=['project_od', 'project_od.gui', 'project_od.particule', 'project_od.screen', 'project_od.physics', 'project_od.map'],
       requires=['pygame'],
       classifiers=[
         "Programming Language :: Python :: 3",

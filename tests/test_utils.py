@@ -1,5 +1,5 @@
 import unittest
-import projet_od.utils
+import project_od.utils
 
 class Test_Utils(unittest.TestCase):
     def test_norm(self):

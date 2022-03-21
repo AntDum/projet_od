@@ -1,4 +1,4 @@
-# projet_od
+# project_od
 A library for Pygame
 
 ## Docs

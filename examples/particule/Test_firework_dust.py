@@ -1,6 +1,6 @@
 import pygame as pg
-import projet_od.particule.particleEffect as pe
-from projet_od.screen import BaseScreen
+import project_od.particule.particleEffect as pe
+from project_od.screen import BaseScreen
 import random
 
 pg.init()

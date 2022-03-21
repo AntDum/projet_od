@@ -1,6 +1,6 @@
 import pygame as pg
-from projet_od.gui.theme import *
-from projet_od.utils import clamp, map
+from project_od.gui.theme import *
+from project_od.utils import clamp, map
 
 class Component:
     """Basic component for graphic, interactif component."""

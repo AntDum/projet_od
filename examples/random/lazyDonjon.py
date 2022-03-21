@@ -1,7 +1,7 @@
 import pygame as pg
-from projet_od.screen import CameraScreen, DummyTarget
-from projet_od.utils import clamp
-from projet_od.gui import Label
+from project_od.screen import CameraScreen, DummyTarget
+from project_od.utils import clamp
+from project_od.gui import Label
 
 pg.init()
 w,h = 720,480
