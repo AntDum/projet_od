@@ -41,13 +41,13 @@ while run:
 
     p_menu.update()
     
-    screen.surface.fill((125,125,125))
+    screen.fill((125,125,125))
 
     p_menu.draw(screen)
 
     # pg.draw.line(screen, (255,0,0), (w/2, 0), (w/2, h))
     # pg.draw.line(screen, (255,0,0), (0, h/2), (w, h/2))
 
-    pg.display.update()
+    screen.display_update()
 
 pg.quit()

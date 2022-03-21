@@ -1,11 +1,12 @@
 import pygame as pg
 from project_od.gui import *
+from project_od.screen import SmartScreen
 
 pg.init()
 
 h = 480
 w = 720
-screen = pg.display.set_mode((w,h))
+screen = SmartScreen(w,h)
 
 font = pg.font.SysFont("Comic Sans MS", 26, False, False)
 
@@ -19,6 +20,8 @@ it = InputText((350, 10), (180,50), font, text="Input")
 
 # gc.on_click = lambda : print("Hello")
 # it.on_change = lambda : print(it.get_text())
+screen.make_background((120,0,0))
+screen.draw_background()
 
 run = True
 while run:
@@ -32,10 +35,9 @@ while run:
     gc.update()
     it.update(events)
 
-    screen.fill((20,20,20))
     
     slider.draw(screen)
-    but.draw(screen)
+    screen.draw(but)
     gc.draw(screen)
     it.draw(screen)
 

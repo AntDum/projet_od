@@ -101,6 +101,6 @@ while run:
     win.draw(screen)
 
 
-    pg.display.update()
+    screen.display_update()
 
 pg.quit()

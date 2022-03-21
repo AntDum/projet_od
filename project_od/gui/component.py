@@ -1,5 +1,7 @@
+from cmath import rect
 import pygame as pg
 from project_od.gui.theme import *
+from project_od.screen.screen import BaseScreen, DrawableScreen, SmartScreen
 from project_od.utils import clamp, map
 
 class Component:
@@ -201,11 +203,22 @@ class GUIComponent(Component, pg.sprite.Sprite):
         image = kwargs.get("image", None)
         if image == None:
             self.has_image = False
-            self.image = pg.Surface(size)
-            self.image.fill((123,30,73))
+            if self.theme.border_radius > 0:
+                self.image = pg.Surface(self.rect.size, flags=pg.SRCALPHA)
+            else:
+                self.image = pg.Surface(self.rect.size)
+                
+            self._render(self.image)
         else:
             self.has_image = True
             self.image = image
+    
+    def _render(self, surf, pos=(0,0)):
+        pg.draw.rect(surface=surf, 
+                    color=self.color, 
+                    rect=(pos,self.rect.size),
+                    width=0,
+                    border_radius=self.theme.border_radius)
 
 
     def draw(self, screen) -> None:
@@ -218,7 +231,7 @@ class GUIComponent(Component, pg.sprite.Sprite):
 
     def update(self):
         if not self.has_image:
-            self.image.fill(self.color)
+            self._render(self.image)
         Component.update(self)
 
 
@@ -336,6 +349,7 @@ class Slider(GUIComponent):
         self.range : tuple = value_range
         self.value : float = kwargs.get("default",(value_range[0] + value_range[1]) / 2)
         self.place_slider()
+        self.prev_rect = self.rect.copy()
 
     def move(self, pos):
         GUIComponent.move(self, pos)
@@ -345,13 +359,16 @@ class Slider(GUIComponent):
     
     
     def place_slider(self) -> None:
+        self.prev_rect = self.rect.copy()
         if self.pos_min[0] == self.pos_max[0]:
             self.rect.centery = map(self.value, self.range[0], self.range[1], self.pos_min[1], self.pos_max[1])
         else:
             self.rect.centerx = map(self.value, self.range[0], self.range[1], self.pos_min[0], self.pos_max[0])
+        
     
     def on_drag(self) -> None:
         pos = pg.mouse.get_pos()
+        self.prev_rect = self.rect.copy()
         pos_min = self.pos_min
         pos_max = self.pos_max
         self.rect.centerx = clamp(pos[0], pos_min[0], pos_max[0])
@@ -368,10 +385,15 @@ class Slider(GUIComponent):
     def draw(self, screen):
         if isinstance(screen, pg.Surface):
             pg.draw.line(screen, self.theme.default_color, self.pos_min, self.pos_max)
-            pg.draw.rect(screen, self.color, self.rect)
+            screen.blit(self.image, self.rect)
+        elif isinstance(screen, (SmartScreen, DrawableScreen)):
+            if self.prev_rect != self.rect:
+                screen.draw_background(self.prev_rect)
+            screen.draw_line(self.pos_min, self.pos_max, self.theme.default_color)
+            screen.blit(self.image, self.rect)
         else:
             pg.draw.line(screen.surface, self.theme.default_color, self.pos_min, self.pos_max)
-            pg.draw.rect(screen.surface, self.color, self.rect)
+            screen.blit(self.image, self.rect)
 
     def get_value(self):
         """Return the value of the slide

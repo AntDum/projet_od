@@ -1,12 +1,12 @@
 import pygame as pg
-from project_od.screen import CameraScreen, DummyTarget
+from project_od.screen import SmartScreen, DummyTarget
 from project_od.utils import clamp
 from project_od.gui import Label
 
 pg.init()
 w,h = 720,480
 
-screen = CameraScreen(w,h)
+screen = SmartScreen(w,h)
 
 class Room:
     def __init__(self, x, y, openning=None) -> None:
@@ -30,6 +30,9 @@ class LazyRoom(Room):
     def __init__(self, x, y, openning=None) -> None:
         super().__init__(x, y, openning)
         self.loaded = False
+    
+    def on_load(self):
+        pass
 
 class RoomGenerator:
     def next(self, x : int, y : int, rules : list[bool|None], dir : int, *args, **kwargs) -> Room:
@@ -57,6 +60,7 @@ class LazyDonjon:
             room = self.rooms[(x,y)]
         x, y = room.x, room.y
         room.loaded = True
+        room.on_load()
 
 
         # Pre load the next room
@@ -82,17 +86,22 @@ class DrawRoom(LazyRoom):
     def __init__(self, x, y, color, openning) -> None:
         super().__init__(x, y, openning)
         self.image = pg.Surface((30,30))
-        self.image.fill((0,0,0))
-        self.color = color
-        pg.draw.rect(self.image, color, ((size/6, size/6),(size*2/3, size*2/3)))
+        self.image.fill((200,200,200))
+        self.realColor = color
+        self.color = (20,20,20)
     
     def render(self):
+        pg.draw.rect(self.image, self.color, ((size/6, size/6),(size*2/3, size*2/3)))
         halfi = size/2 - size/12
         ort = (0,halfi),(halfi, 0), (size-size/6, halfi), (halfi, size-size/6)
         for i, op in enumerate(self.openning):
             if op:
                 pg.draw.rect(self.image, self.color, (ort[i],(size/6, size/6)))
     
+    def on_load(self):
+        self.color = self.realColor
+        self.render()
+
     def draw(self, screen):
         screen.blit_cam(self.image, pg.Rect(self.x*size, self.y*size,0,0))
     
@@ -177,6 +186,6 @@ while run:
     pg.draw.rect(screen.surface, (255,0,0), screen.from_cam(((x*size + size/4, y*size + size/4),(size/2,size/2))))
     lb.draw(screen)
 
-    pg.display.update()
+    screen.display_update()
 
 pg.quit()

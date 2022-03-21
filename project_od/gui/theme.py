@@ -5,6 +5,7 @@ class THEME:
     focus_color = (245, 245, 220)
     text_color = (0,0,0)
     padding = 8
+    border_radius = 10
 
 class THEME_RED(THEME):
     pressed_color = (123,30,73)

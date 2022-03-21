@@ -73,7 +73,6 @@ class ParticleSystem(pygame.sprite.RenderUpdates):
         rect_list = [sprite.draw_background(screen) for sprite in self.sprites()]
         rect_list.extend(super().draw(screen))
         return rect_list
-        #Ici il faudrais mettre un return et gerer ça plus globalement
 
     def cleanEmpty(self, screen):
         rect_list = [sprite.clean(screen) for sprite in self.sprites()]
