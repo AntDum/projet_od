@@ -111,7 +111,7 @@ class DrawDonjon(Donjon):
             room.draw(screen)
 
 generator = ColorRoomGenerator()
-target = DummyTarget(0, 0)
+target = DummyTarget(0, 0, .5)
 donjon = DrawDonjon(generator)
 
 

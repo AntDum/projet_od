@@ -161,19 +161,44 @@ class Donjon:
                         r.next_room[j] = sr
 
     def get_num_loaded(self) -> int:
+        """Number of room that has been loaded
+
+        (loaded = True)
+        """
         return self.nb_loaded
     
     def get_num_created(self) -> int:
+        """Number of room that has been created
+
+        (init)
+        """
         return len(self.rooms)
 
     def get_num_to_create(self) -> int:
+        """Number of room that has not been explored
+
+        (not loaded or not created but a door to that place exist)
+        """
         return len(self.to_create)
     
     def get_num_unloaded(self) -> int:
+        """Number of room that has been created but not loaded
+
+        (loaded = False)
+        """
         return self.get_num_created()-self.get_num_loaded()
 
     def get_num_border(self) -> int:
+        """Number of room that has not been created yet but a door exist to that place
+        """
         return self.get_num_to_create()-self.get_num_unloaded()
 
     def get_num_estimate_size(self) -> int:
+        """The size that the donjon has if all the new room are closed
+        """
         return self.get_num_loaded() + self.get_num_to_create()
+    
+    def get_size(self) -> int:
+        """The number of room
+        """
+        return self.get_num_created()

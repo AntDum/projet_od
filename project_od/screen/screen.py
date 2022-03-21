@@ -1,3 +1,4 @@
+from math import ceil
 import pygame as pg
 
 class BaseScreen:
@@ -76,13 +77,13 @@ class CameraScreen(BaseScreen):
 class DummyTarget:
     def __init__(self, x, y, speed=1) -> None:
         self.rect = pg.Rect(x,y,0,0)
-        self.speed = 1
+        self.speed = speed
 
-    def update(self, dt=1):
+    def update(self, dt=1/1000):
         keys = pg.key.get_pressed()
         dx = keys[pg.K_RIGHT] - keys[pg.K_LEFT]
         dy = keys[pg.K_DOWN] - keys[pg.K_UP]
-        s = dt * self.speed
+        s = ceil((dt * 1000) * self.speed)
         self.rect.move_ip(dx * s, dy * s)
     
     def move(self, x, y):
