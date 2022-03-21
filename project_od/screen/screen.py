@@ -42,8 +42,8 @@ class CameraScreen(BaseScreen):
     def background_cam(self, rect):
         return self.draw_background(self.from_cam(rect))
 
-    def blit_cam(self, image, rect):
-        return self.blit(image, self.from_cam(rect))
+    def blit_cam(self, image, rect, area=None):
+        return self.blit(image, self.from_cam(rect), area=area)
     
     def from_cam(self, rect):
         rect = pg.Rect(rect)
@@ -144,12 +144,12 @@ class SmartScreen(CameraScreen):
                 rect = self.fill(other.color, rect)
             if prev_rect:
                 if rect.colliderect(prev_rect):
-                    self.to_update(rect.union(prev_rect))
+                    self.to_update.append(rect.union(prev_rect))
                 else:
-                    self.to_update(rect)
-                    self.to_update(prev_rect)
+                    self.to_update.append(rect)
+                    self.to_update.append(prev_rect)
             else:
-                self.to_update(rect)
+                self.to_update.append(rect)
             
     def draw_cam(self, other, area=None):
         if hasattr(other, "draw"):
@@ -165,12 +165,12 @@ class SmartScreen(CameraScreen):
                 rect = self.fill(other.color, self.from_cam(rect))
             if prev_rect:
                 if rect.colliderect(prev_rect):
-                    self.to_update(rect.union(prev_rect))
+                    self.to_update.append(rect.union(prev_rect))
                 else:
-                    self.to_update(rect)
-                    self.to_update(prev_rect)
+                    self.to_update.append(rect)
+                    self.to_update.append(prev_rect)
             else:
-                self.to_update(rect)
+                self.to_update.append(rect)
 
     def fill(self, color, rect=None):
         if rect==None:

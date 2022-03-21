@@ -40,26 +40,28 @@ def draw_map(k):
             screen.draw_rect((x*size,y*size,size,size), color)
 
 map = Map(w//size, h//size, conv)
-map2 = Map(w, h, conv)
+# map2 = Map(w, h, conv)
 
 draw_map(map)
 
-toggle = True
+screen.display_update()
+
+# toggle = True
 
 run = True
 while run:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             run = False
-        if event.type == pg.KEYDOWN:
-            toggle = not toggle
-            print(toggle)
-            if toggle:
-                draw_map(map)
-            else:
-                draw_map(map2)
+        # if event.type == pg.KEYDOWN:
+            # toggle = not toggle
+            # print(toggle)
+            # if toggle:
+            # draw_map(map)
+            # else:
+            #     draw_map(map2)
 
-            pg.display.update()
+            # pg.display.update()
 
 
 pg.quit()
