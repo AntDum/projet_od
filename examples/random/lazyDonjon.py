@@ -35,7 +35,7 @@ class LazyRoom(Room):
         pass
 
 class RoomGenerator:
-    def next(self, x : int, y : int, rules : list[bool|None], dir : int, *args, **kwargs) -> Room:
+    def next(self, x : int, y : int, rules : list[bool], dir : int, *args, **kwargs) -> Room:
         return Room(x, y)
 
 class LazyDonjon:
@@ -89,6 +89,7 @@ class DrawRoom(LazyRoom):
         self.image.fill((200,200,200))
         self.realColor = color
         self.color = (20,20,20)
+        self.render()
     
     def render(self):
         pg.draw.rect(self.image, self.color, ((size/6, size/6),(size*2/3, size*2/3)))
@@ -116,21 +117,14 @@ class ColorRoomGenerator(RoomGenerator):
         return tuple(int(clamp(random()*255, 30, 230)) for _ in range(3))
 
     def next(self, x, y, rules, dir=-1 , **kwargs):
+        #If has full choice (no neighbors) (new or tp)
         if all(i==None for i in rules):
-            r = DrawRoom(x,y, (255,)*3, openning=list((True,)*4))
-            r.render()
-            return r
+            return DrawRoom(x,y, (255,)*3, openning=list((True,)*4))
         
-        op = [random() < factor for _ in range(4)]
-        if not any(op):
-            op = [True for _ in op]
-        r = DrawRoom(x,y,self.randomColor(), openning=op)
-        for i, rule in enumerate(rules):
-            if rule != None:
-                r.openning[i] = rule
+        # Make the choice for empty space
+        op = [random() < factor if rule == None else rule for rule in rules]
 
-        r.render()
-        return r
+        return DrawRoom(x,y,self.randomColor(), openning=op)
         
 
 class DrawDonjon(LazyDonjon):

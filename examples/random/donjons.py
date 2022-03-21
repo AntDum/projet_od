@@ -26,7 +26,7 @@ class Room:
         return False
 
 class RoomGenerator:
-    def next(self, x : int, y : int, rules : list[bool|None], dir : int, *args, **kwargs) -> Room:
+    def next(self, x : int, y : int, rules : list[bool], dir : int, *args, **kwargs) -> Room:
         return Room(x, y)
 
 class Donjon:

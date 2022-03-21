@@ -5,11 +5,11 @@
 - Ressource loader ?
 - Strategie collider
 - Gestion multithread
-- Auto updatable screen with dirty on blit
-- Personalisation de gui
 
 ## Change
 
+- Personalisation de gui
+- Auto updatable screen with dirty on blit
 
 # Test
 

@@ -184,3 +184,7 @@ class SmartScreen(CameraScreen):
     
     def draw_line(self, start_pos, end_pos, color, width=1, *args, **kwargs):
         self.to_update.append(pg.draw.line(self.surface, color=color, start_pos=start_pos, end_pos=end_pos, width=width, *args, **kwargs))
+
+    def draw_cross_center(self, color, width=1, *args, **kwargs):
+        self.draw_line((self.width/2, 0),(self.width/2, self.height), color, width, *args, **kwargs)
+        self.draw_line((0, self.height/2),(self.width, self.height/2), color, width, *args, **kwargs)
