@@ -15,7 +15,7 @@ setup(name='Projet_OD-AntDum',
         "Bug Tracker": "https://github.com/AntDum/projet_od/issues",
         "Source": 'https://github.com/AntDum/projet_od'
       },
-      packages=['projet_od', 'projet_od.gui', 'projet_od.state', 'projet_od.particule', 'projet_od.screen', 'projet_od.physics'],
+      packages=['projet_od', 'projet_od.gui', 'projet_od.particule', 'projet_od.screen', 'projet_od.physics', 'projet_od.map'],
       requires=['pygame'],
       classifiers=[
         "Programming Language :: Python :: 3",

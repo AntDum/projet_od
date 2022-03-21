@@ -3,7 +3,7 @@ from projet_od.gui import *
 from projet_od.screen import BaseScreen
 
 pg.init()
-pg.display.init()
+
 h = 480
 w = 720
 screen = BaseScreen(w,h)

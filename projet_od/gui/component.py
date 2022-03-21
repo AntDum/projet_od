@@ -279,11 +279,11 @@ class Button(GUIComponent):
             color (Color) : Default theme['default_color']
         """
         self.on_focus = None
-        kwargs.setdefault("padding", self.theme.padding)
         GUIComponent.__init__(self, pos, size, **kwargs)
+        kwargs.setdefault("padding", self.theme.padding)
         self.label = Label(pos, text, font, **kwargs)
         self.label.rect.centery = self.rect.centery
-    
+        
     def update(self):
         GUIComponent.update(self)
         self.label.update()

@@ -1,1 +1,1 @@
-from projet_od.screen.screen import BaseScreen, CameraScreen
+from projet_od.screen.screen import BaseScreen, CameraScreen, DrawableScreen

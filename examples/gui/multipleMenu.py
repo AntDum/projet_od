@@ -3,7 +3,6 @@ from projet_od.gui import Panel, Button, Label, THEME_WHITE
 from projet_od.screen import BaseScreen
 
 pg.init()
-pg.display.init()
 
 w, h = 720, 480
 
