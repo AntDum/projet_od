@@ -146,6 +146,7 @@ class Component:
             offset (tuple): (x,y)
         """
         self.rect.move_ip(offset[0], offset[1])
+        return self
 
     def move_to(self, pos : tuple):
         """Move the widget to a position
@@ -156,6 +157,7 @@ class Component:
         horizontal_shift = pos[0]-self.rect.x
         vertical_shift = pos[1]-self.rect.y
         self.move((horizontal_shift,vertical_shift))
+        return self
     
     def center_x(self, component):
         """Center the widget to the center x of the other component
@@ -164,6 +166,7 @@ class Component:
             component (Component): An other component
         """
         self.move_to((component.rect.centerx - self.rect.width/2, self.rect.y))
+        return self
 
     def center_y(self, component):
         """Center the widget to the center y of the other component
@@ -172,6 +175,7 @@ class Component:
             component (Component): An other component
         """
         self.move_to((self.rect.x, component.rect.centery - self.rect.height/2))
+        return self
     
 
     def center(self, component):
@@ -181,6 +185,7 @@ class Component:
             component (Component): An other component
         """
         self.move_to((component.rect.centerx - self.rect.width/2, component.rect.centery - self.rect.height/2))
+        return self
 
 
 class GUIComponent(Component, pg.sprite.Sprite):
@@ -275,6 +280,7 @@ class Label(GUIComponent):
         self.text = str(text)
         if self.text != prev:
             self.render()
+        return self
 
 
 class Button(GUIComponent):
@@ -312,12 +318,15 @@ class Button(GUIComponent):
     def move(self, pos):
         GUIComponent.move(self, pos)
         self.label.move(pos)
+        return self
 
     def set_text(self, text):
         self.label.set_text(text)
+        return self
     
     def center_text(self):
         self.label.center(self)
+        return self
 
 
 class Slider(GUIComponent):
@@ -356,6 +365,7 @@ class Slider(GUIComponent):
         self.pos_min = self.pos_min[0] + pos[0], self.pos_min[1] + pos[1]
         self.pos_max = self.pos_max[0] + pos[0], self.pos_max[1] + pos[1]
         self.place_slider()
+        return self
     
     
     def place_slider(self) -> None:
@@ -430,6 +440,7 @@ class InputText(GUIComponent):
     def move(self, pos):
         GUIComponent.move(self, pos)
         self.text_pos = (self.rect.x + self.padding, self.rect.y + self.rect.height/2 - self.font_height/2)
+        return self
 
     def render(self, text) -> None:
         self.text_image = self.font.render(text, True, self.text_color)
@@ -492,10 +503,12 @@ class InputText(GUIComponent):
     def set_padding(self, padding):
         self.padding = padding
         self.text_pos = (self.rect.x + self.padding, self.rect.y + self.rect.height/2 - self.font_height/2)
+        return self
         
     def set_text(self, text):
         self.text = str(text)
         self.imePos = len(self.text)
+        return self
     
     def get_text(self) -> str:
         return self.text
@@ -525,6 +538,7 @@ class Panel(pg.sprite.Group, Component):
         Component.move(self, pos)
         for child in self.sprites():
             child.move(pos)
+        return self
     
     def draw(self, screen):
         for child in self.sprites():
@@ -534,3 +548,4 @@ class Panel(pg.sprite.Group, Component):
         horizontal_shift = pos[0]-self.rect.x
         vertical_shift = pos[1]-self.rect.y
         self.move((horizontal_shift,vertical_shift))
+        return self

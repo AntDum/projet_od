@@ -2,7 +2,7 @@ import pygame
 
 
 class Particle(pygame.sprite.Sprite):
-    def __init__(self, x, y, angle, length, width=0, height=0, color=(255,255,255), image=None, gravity=True):
+    def __init__(self, x, y, angle, length, width=0, height=0, color=(255,255,255), image=None, gravity=True, grav=(0,0.1)):
         """Init
 
         Args:\n
@@ -36,26 +36,32 @@ class Particle(pygame.sprite.Sprite):
         self.acceleration = pygame.math.Vector2(0,0)
 
         if gravity:
-            self.gravity = pygame.math.Vector2(0, 0.1)
+            self.gravity = pygame.math.Vector2(*grav)
         else:
             self.gravity = pygame.math.Vector2(0, 0)
 
     def set_color(self, color):
        self.image.fill(color)
 
-    def update(self):
+    def update(self, dt=1):
         self.prev_rect = pygame.Rect(self.rect)
 
         self.speed += self.acceleration
         self.speed += self.gravity
 
-        self.pos += self.speed
+        self.pos += self.speed * dt
 
         self.rect.x = int(self.pos.x)
         self.rect.y = int(self.pos.y)
 
     def draw_background(self, screen):
         return screen.draw_background(self.prev_rect)
+    
+    def draw_background_cam(self, screen):
+        return screen.background_cam(self.prev_rect)
+
+    def draw_cam(self, screen):
+        return screen.blit_cam(self.image, self.rect)
 
     def clean(self, screen):
         return screen.draw_background(self.rect)
@@ -65,13 +71,19 @@ class Particle(pygame.sprite.Sprite):
 
 
 class ParticleSystem(pygame.sprite.RenderUpdates):
-    def __init__(self):
+    def __init__(self, no_cam=False):
         super().__init__()
+        self.no_cam = no_cam
+        self.has_finish = False
 
     def draw(self, screen):
         self.update()
-        rect_list = [sprite.draw_background(screen) for sprite in self.sprites()]
-        rect_list.extend(super().draw(screen))
+        if self.no_cam:
+            rect_list = [sprite.draw_background(screen) for sprite in self.sprites()]
+            rect_list.extend(super().draw(screen))
+        else:
+            rect_list = [sprite.draw_background_cam(screen) for sprite in self.sprites()]
+            rect_list.extend([sprite.draw_cam(screen) for sprite in self.sprites()])
         return rect_list
 
     def cleanEmpty(self, screen):

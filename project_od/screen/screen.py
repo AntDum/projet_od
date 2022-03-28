@@ -2,8 +2,11 @@ from math import ceil
 import pygame as pg
 
 class BaseScreen:
-    def __init__(self, w, h):
+    def __init__(self, w, h, caption="Od game", icon=None):
         self.surface = pg.display.set_mode((w,h))
+        pg.display.set_caption(caption)
+        if icon != None:
+            pg.display.set_icon(icon)
         if not hasattr(self, "blit"):
             self.blit = self.surface.blit
         if not hasattr(self, "fill"):
@@ -11,6 +14,9 @@ class BaseScreen:
         self.background = None
         self.width = w
         self.height = h
+    
+    def get_size(self):
+        return self.width, self.height
 
     def draw_background(self, rect=None):
         if self.background:
@@ -35,8 +41,8 @@ class BaseScreen:
             pg.display.update()
 
 class CameraScreen(BaseScreen):
-    def __init__(self, w, h):
-        super().__init__(w, h)
+    def __init__(self, w, h,*args,**kwargs):
+        super().__init__(w, h, *args, **kwargs)
         self.camera = pg.Rect(0,0,w,h)
         self.camera_border : tuple = None # left, top, right, bottom
     
@@ -94,8 +100,8 @@ class DummyTarget:
         self.rect.y = y
 
 class DrawableScreen(BaseScreen):
-    def __init__(self, w, h):
-        super().__init__(w, h)
+    def __init__(self, w, h, *args, **kwargs):
+        super().__init__(w, h, *args, **kwargs)
     
     def draw_rect(self, rect, color, *args, **kwargs):
         pg.draw.rect(self.surface, color=color, rect=rect, *args, **kwargs)
@@ -108,8 +114,8 @@ class DrawableScreen(BaseScreen):
 
 
 class SmartScreen(CameraScreen):
-    def __init__(self, w, h):
-        super().__init__(w, h)
+    def __init__(self, w, h, *args, **kwargs):
+        super().__init__(w, h, *args, **kwargs)
         self.to_update = []
         self.full_update = False
 

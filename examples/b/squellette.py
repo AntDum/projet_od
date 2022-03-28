@@ -7,6 +7,7 @@ FPS = 60
 screen = SmartScreen(w, h)
 clock = pg.time.Clock()
 
+
 run = True
 while run:
     dt = clock.tick(FPS) / 1000
