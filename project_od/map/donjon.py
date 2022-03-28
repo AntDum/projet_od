@@ -1,4 +1,7 @@
 
+from project_od.utils import around_4
+
+
 class DonjonRoom:
     """A template for a donjonRoom
     """
@@ -92,7 +95,7 @@ class Donjon:
         """
         if (x,y) not in self.rooms: # Not created
             # Neighbors coordinate
-            neighborhood = (x-1,y),(x, y-1),(x+1,y),(x,y+1)
+            neighborhood = around_4(x,y)
             # Neighbor room
             neighbors = [self.rooms.get(k, None) for k in neighborhood]
             # Can have a room in the direction
@@ -117,11 +120,11 @@ class Donjon:
         self.to_create.remove((x,y))
 
         # Create the next room
-        for i, (xr,yr) in enumerate(((x-1,y),(x, y-1),(x+1,y),(x,y+1))):
+        for i, (xr,yr) in enumerate(around_4(x,y)):
             # If there is a door and the neighbor doesn't exist
             if room.shape[i] and room.next_room[i] == None and (xr,yr) not in self.rooms:
 
-                neighborhood = (xr-1,yr),(xr, yr-1),(xr+1,yr),(xr,yr+1)
+                neighborhood = around_4(xr,yr)
                 neighbors = []
                 rules = []
                 authorized_door =  self.max_rooms - self.get_num_estimate_size()

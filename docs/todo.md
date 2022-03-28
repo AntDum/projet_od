@@ -2,6 +2,7 @@
 
 ## Idea
 
+- IA (pathfinding)
 - Ressource loader ?
 - Strategie collider
 - Gestion multithread

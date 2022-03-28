@@ -1,5 +1,6 @@
 from random import shuffle
 from math import sqrt, floor
+from heapq import heappush, heappop, heapify
 
 def norm(x, _min, _max):
     return (x - _min) / (_max - _min)
@@ -12,6 +13,7 @@ def map(x, source_min, source_max, dest_min, dest_max):
 
 def clamp(x, min_val, max_val):
     return min(max(x, min_val), max_val)
+
 class Perlin:
     grad2 = [[-1,1],[0,1],[1,1],
             [-1,0],       [1,0],
@@ -109,3 +111,57 @@ class Perlin:
         # Add contributions from each corner to get the final noise value.
         # The result is scaled to return values in the interval [-1,1].
         return 70 * (n0 + n1 + n2)
+
+
+class PriorityQueue:
+    def __init__(self, function=lambda x: x):
+        self.queue = []
+        self.function = function
+
+    def __str__(self) -> str:
+        return ' '.join([str(i) for i in self.queue])
+    
+    def __len__(self) -> int:
+        return len(self.queue)
+    
+    def isEmpty(self) -> bool:
+        return len(self) == 0
+
+    def add(self, item) -> None:
+        heappush(self.queue, (self.function(item), item))
+
+    def insert(self, key, item) -> None:
+        heappush(self.queue, (key, item))
+
+    def pop(self):
+        if self.queue:
+            return heappop(self.queue)[1]
+
+    def remove(self, key):
+        pos = None
+        for i, (_, item) in enumerate(self.queue):
+            if item == key:
+                pos = i
+                break
+        if pos != None:
+            ele = self.queue[pos]
+            del self.queue[pos]
+            heapify(self.queue)
+            return ele[1]
+
+    def __getitem__(self, key):
+        for value, item in self.queue:
+            if item == key:
+                return value
+
+    def __contains__(self, key):
+        for _, item in self.queue:
+            if item == key:
+                return True
+        return False
+
+def around_4(x, y):
+    return (x-1,y),(x, y-1),(x+1,y),(x,y+1)
+
+def around_8(x, y):
+    return (x-1,y),(x-1,y-1),(x, y-1),(x+1,y-1),(x+1,y),(x+1,y+1),(x,y+1),(x-1,y+1)
