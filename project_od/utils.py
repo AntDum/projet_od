@@ -1,6 +1,7 @@
 from random import shuffle
 from math import sqrt, floor
 from heapq import heappush, heappop, heapify
+from copy import deepcopy, copy
 
 def norm(x, _min, _max):
     return (x - _min) / (_max - _min)
@@ -127,15 +128,29 @@ class PriorityQueue:
     def isEmpty(self) -> bool:
         return len(self) == 0
 
-    def add(self, item) -> None:
-        heappush(self.queue, (self.function(item), item))
+    def add(self, item, key=None) -> None:
+        if key==None:
+            heappush(self.queue, (self.function(item), item))
+        else:
+            heappush(self.queue, (key, item))
+
 
     def insert(self, key, item) -> None:
         heappush(self.queue, (key, item))
 
     def pop(self):
-        if self.queue:
-            return heappop(self.queue)[1]
+        return heappop(self.queue)[1]
+    
+    def __iter__(self):
+        r = copy(self)
+        for _ in range(len(r)):
+            yield r.pop()
+
+    def __copy__(self):
+        r = PriorityQueue()
+        r.queue = copy(self.queue)
+        r.function = copy(self.function)
+        return r
 
     def remove(self, key):
         pos = None

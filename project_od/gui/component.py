@@ -123,6 +123,9 @@ class Component:
                     self.on_middle_click()
                     self.pressed_middle = False
             self.dragging = False
+        
+        if self.focus:
+            self.on_focus()
 
         self.on_post_update()
 
