@@ -4,6 +4,9 @@ from project_od.gui.theme import *
 from project_od.screen.screen import BaseScreen, DrawableScreen, SmartScreen
 from project_od.utils import clamp, map
 
+def empty():
+    pass
+
 class Component:
     """Basic component for graphic, interactif component."""
     def __init__(self, pos : tuple, size : tuple, **kwargs):
@@ -20,8 +23,6 @@ class Component:
 
         self.rect = pg.Rect(pos, size)
 
-        def empty():
-            pass
         def get(attr):
             g = None
             if attr in kwargs:
@@ -42,7 +43,9 @@ class Component:
         self.on_hover = get("on_hover")
         self.on_hover_exit = get("on_hover_exit")
         self.on_press = get("on_press")
+        self.on_drag_enter = get("on_drag_enter")
         self.on_drag = get("on_drag")
+        self.on_drag_exit = get("on_drag_exit")
         self.on_change = get("on_change")
         self.on_press_left = get("on_press_left")
         self.on_press_right = get("on_press_right")
@@ -51,13 +54,17 @@ class Component:
         self.on_focus_exit = get("on_focus_exit")
         self.on_pre_update = get("on_pre_update")
         self.on_post_update = get("on_post_update")
+        self.draggable = kwargs.get("draggable", False)
+
         self.pressed = False
+        self.newly_pressed = False
         self.pressed_left = False
         self.pressed_right = False
         self.pressed_middle = False
         self.hover = False
         self.focus = False
         self.dragging = False
+        self.global_mouse_pressed = False
         self.color = kwargs.get("color", self.theme.default_color)
 
 
@@ -78,6 +85,7 @@ class Component:
         else:
             self.on_hover_exit()
             self.hover = False
+            self.newly_pressed = False
             self.pressed = False
             self.pressed_left = False
             self.pressed_right = False
@@ -85,11 +93,16 @@ class Component:
         
         pressed = mouse.get_pressed()  
         if any(pressed):
+            
             if self.hover:
-                if not self.focus:
+                if self.newly_pressed:
+                    if not self.dragging:
+                        self._on_drag_enter()
+                        self.on_drag_enter()
+                    if not self.focus:
+                        self.on_focus_enter()
                     self.dragging = True
-                    self.on_focus_enter()
-                self.focus = True
+                    self.focus = True
                 self.pressed = True
                 self.on_press()
                 if pressed[0]:
@@ -102,28 +115,37 @@ class Component:
                     self.pressed_right = True
                     self.on_press_right()
             else:
-                if self.focus:
-                    self.on_focus_exit()
-                self.focus = False
+                if not self.global_mouse_pressed:
+                    if self.focus:
+                        self.on_focus_exit()
+                        self.focus = False
 
+            self.global_mouse_pressed = True
             if self.dragging:
+                self._on_drag()
                 self.on_drag()
         else:
-            if self.hover:
+            if self.hover and self.newly_pressed:
                 if self.pressed:
                     self.on_click()
-                    self.pressed = False
                 if self.pressed_left:
                     self.on_left_click()
-                    self.pressed_left = False
                 if self.pressed_right:
                     self.on_right_click()
-                    self.pressed_right = False
                 if self.pressed_middle:
                     self.on_middle_click()
-                    self.pressed_middle = False
+            if self.dragging:
+                self.on_drag_exit()
+            self.global_mouse_pressed = False
+            self.pressed = False
+            self.pressed_left = False
+            self.pressed_right = False
+            self.pressed_middle = False
             self.dragging = False
         
+        if self.hover and not self.pressed:
+            self.newly_pressed = True
+
         if self.focus:
             self.on_focus()
 
@@ -140,6 +162,18 @@ class Component:
 
     def on_focus(self):
         self.color = (self.theme.focus_color)
+
+    def _on_drag_enter(self):
+        if self.draggable:
+            pos = pg.mouse.get_pos()
+            off_x = pos[0] - self.rect.x
+            off_y = pos[1] - self.rect.y
+            self._drag_offset = off_x, off_y
+
+    def _on_drag(self):
+        if self.draggable:
+            pos = pg.mouse.get_pos()
+            self.move_to((pos[0] - self._drag_offset[0], pos[1] - self._drag_offset[1]))
 
     
     def move(self, offset : tuple):
@@ -189,6 +223,9 @@ class Component:
         """
         self.move_to((component.rect.centerx - self.rect.width/2, component.rect.centery - self.rect.height/2))
         return self
+    
+    def set_color(self, color):
+        self.color = color
 
 
 class GUIComponent(Component, pg.sprite.Sprite):
@@ -264,10 +301,10 @@ class Label(GUIComponent):
         self.text : str = text
         self.text_size : tuple = font.size(text)
         self.padding : int = kwargs.get("padding", 0)
-        self.on_hover = None
-        self.on_press = None
-        self.on_focus = None
-        self.on_pre_update = None
+        self.on_hover = empty
+        self.on_press = empty
+        self.on_focus = empty
+        self.on_pre_update = empty
         GUIComponent.__init__(self, (pos[0] + self.padding, pos[1]), self.text_size, **kwargs)
         self.text_color = kwargs.get("text_color", self.theme.text_color)
         self.render()
@@ -303,7 +340,7 @@ class Button(GUIComponent):
             text_color (Color) : color of the text
             color (Color) : Default theme['default_color']
         """
-        self.on_focus = None
+        self.on_focus = empty
         GUIComponent.__init__(self, pos, size, **kwargs)
         kwargs.setdefault("padding", self.theme.padding)
         self.label = Label(pos, text, font, **kwargs)
