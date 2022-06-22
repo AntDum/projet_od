@@ -9,6 +9,17 @@ def norm(x, _min, _max):
 def lerp(x, _min, _max):
     return (_max - _min) * x + _min
 
+def bezier_lin(t, p_0, p_1):
+    return p_0 + (p_1 - p_0) * t
+
+def bezier_quad(t, p_0, p_1, p_2):
+    return p_1 + (1-t)**2*(p_0 - p_1) + t**2*(p_2 - p_1)
+
+def bezier_cub(t, p_0, p_1, p_2, p_3):
+    return (1-t)**3*p_0 + 3*(1-t)**2*t*p_1 + 3*(1-t)*t**2*p_2 + t**3*p_3
+
+bezier = bezier_cub
+
 def map(x, source_min, source_max, dest_min, dest_max):
     return lerp(norm(x, source_min, source_max), dest_min, dest_max)
 
