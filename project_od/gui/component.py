@@ -1,8 +1,12 @@
 from cmath import rect
+from operator import length_hint
 import pygame as pg
 from project_od.gui.theme import *
+from project_od.physics.animator import Follow
+from project_od.physics.transform import rotate_pivot
 from project_od.screen.screen import BaseScreen, DrawableScreen, SmartScreen
-from project_od.utils import clamp, map
+from project_od.utils import clamp, translate
+
 
 def empty():
     pass
@@ -55,7 +59,13 @@ class Component:
         self.on_pre_update = get("on_pre_update")
         self.on_post_update = get("on_post_update")
         self.draggable = kwargs.get("draggable", False)
+        self.drag_rate = kwargs.get("drag_rate", 1)
+        self.drag_min_dist = kwargs.get("drag_min_dist", 0.01)
+        self.drag_rotate = kwargs.get("drag_rotate", False)
+        self.drag_point = kwargs.get("drag_point", "auto")
 
+        self._drag_offset = (0,0)
+        self.follower = Follow(self.drag_rate, self.drag_min_dist)
         self.pressed = False
         self.newly_pressed = False
         self.pressed_left = False
@@ -66,6 +76,7 @@ class Component:
         self.dragging = False
         self.global_mouse_pressed = False
         self.color = kwargs.get("color", self.theme.default_color)
+        self.prev_pos = self.rect.topleft
 
 
     def update(self, scale=1) -> None:
@@ -74,10 +85,12 @@ class Component:
         Args:
             scale (int, optional): Scale the widget. Defaults to 1.
         """
+        
         self.on_pre_update()
         mouse = pg.mouse
+        mouse_pos = mouse.get_pos()
         rect = pg.Rect(self.rect.x, self.rect.y, self.rect.width*scale, self.rect.height*scale)
-        if rect.collidepoint(mouse.get_pos()):
+        if rect.collidepoint(mouse_pos):
             self.on_hover()
             if not self.hover:
                 self.on_hover_enter()
@@ -135,6 +148,7 @@ class Component:
                 if self.pressed_middle:
                     self.on_middle_click()
             if self.dragging:
+                self._on_drag_exit()
                 self.on_drag_exit()
             self.global_mouse_pressed = False
             self.pressed = False
@@ -150,6 +164,9 @@ class Component:
             self.on_focus()
 
         self.on_post_update()
+        self.rel_pos = self.rect.left - self.prev_pos[0], self.rect.top - self.prev_pos[1] 
+        self.prev_pos = self.rect.topleft
+        
 
     def on_pre_update(self):
         self.color = (self.theme.default_color)
@@ -165,16 +182,24 @@ class Component:
 
     def _on_drag_enter(self):
         if self.draggable:
-            pos = pg.mouse.get_pos()
-            off_x = pos[0] - self.rect.x
-            off_y = pos[1] - self.rect.y
-            self._drag_offset = off_x, off_y
+            if self.drag_point == "auto":
+                pos = pg.mouse.get_pos()
+                off_x = pos[0] - self.rect.x
+                off_y = pos[1] - self.rect.y
+                self._drag_offset = off_x, off_y
+            else:
+                self._drag_offset = self.drag_point
+            self.follower.set_current(self.rect.topleft)
 
     def _on_drag(self):
         if self.draggable:
             pos = pg.mouse.get_pos()
-            self.move_to((pos[0] - self._drag_offset[0], pos[1] - self._drag_offset[1]))
+            self.follower.set_objectif((pos[0] - self._drag_offset[0], pos[1] - self._drag_offset[1]))
+            self.move_to(self.follower.next())
 
+    def _on_drag_exit(self):
+        if self.draggable:
+            self._drag_offset = (0,0)
     
     def move(self, offset : tuple):
         """Move the widget from an offset
@@ -272,6 +297,21 @@ class GUIComponent(Component, pg.sprite.Sprite):
         Args:
             screen (Surface | Screen): a surface to draw to.
         """
+        if self.draggable and self.drag_rotate and self.dragging:
+            mouvement : pg.Vector2 = pg.Vector2(self.rel_pos)
+            length = mouvement.length()
+            if length > 0:
+                mouvement.scale_to_length(clamp(abs(length), 0, 50)/50)
+                vec : pg.Vector2 = (0,-1) + mouvement
+                _, angle = vec.as_polar()
+                angle = (angle + 90) * -1
+                rotate_image = pg.transform.rotate(self.image, angle)
+                drag_point = (self.rect.topleft + pg.Vector2(self._drag_offset))
+                
+                origin = rotate_pivot(drag_point, self.image.get_size(), self._drag_offset, angle)
+                screen.blit(rotate_image, origin)
+                return
+
         screen.blit(self.image, self.rect)
 
     def update(self):
@@ -411,9 +451,9 @@ class Slider(GUIComponent):
     def place_slider(self) -> None:
         self.prev_rect = self.rect.copy()
         if self.pos_min[0] == self.pos_max[0]:
-            self.rect.centery = map(self.value, self.range[0], self.range[1], self.pos_min[1], self.pos_max[1])
+            self.rect.centery = translate(self.value, self.range[0], self.range[1], self.pos_min[1], self.pos_max[1])
         else:
-            self.rect.centerx = map(self.value, self.range[0], self.range[1], self.pos_min[0], self.pos_max[0])
+            self.rect.centerx = translate(self.value, self.range[0], self.range[1], self.pos_min[0], self.pos_max[0])
         
     
     def on_drag(self) -> None:
@@ -425,9 +465,9 @@ class Slider(GUIComponent):
         self.rect.centery = clamp(pos[1], pos_min[1], pos_max[1])
         prev = self.value
         if pos_min[0] == pos_max[0]:
-            self.value = map(self.rect.centery, pos_min[1], pos_max[1], self.range[0], self.range[1])
+            self.value = translate(self.rect.centery, pos_min[1], pos_max[1], self.range[0], self.range[1])
         else:
-            self.value = map(self.rect.centerx, pos_min[0], pos_max[0], self.range[0], self.range[1])
+            self.value = translate(self.rect.centerx, pos_min[0], pos_max[0], self.range[0], self.range[1])
         if prev != self.value:
             self.on_change()
         

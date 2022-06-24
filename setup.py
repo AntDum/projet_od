@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(name='project_od-AntDum',
-      version='1.0.2',
+      version='1.1.0',
       description='Tools for making game with pygame',
       author='AntDum',
       long_description=long_description,
@@ -22,5 +22,5 @@ setup(name='project_od-AntDum',
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
       ],
-      python_requires=">=3.9"
+      python_requires=">=3.10"
      )
