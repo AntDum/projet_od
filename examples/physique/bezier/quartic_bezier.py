@@ -1,4 +1,3 @@
-from matplotlib import bezier
 import pygame as pg
 from project_od.gui import *
 from project_od.screen import SmartScreen
@@ -33,7 +32,9 @@ delta_y = end[1] - start[1]
 
 point_1 = (0, 300)
 point_2 = (100, 100)
-point_3 = (720, 300)
+point_3 = (300, 300)
+point_4 = (600, 400)
+point_5 = (720, 300)
 f = -1
 run = True
 while run:
@@ -64,22 +65,24 @@ while run:
     screen.draw_circle(point_1, 6, color=(255,)*3)
     screen.draw_circle(point_2, 6, color=(255,)*3)
     screen.draw_circle(point_3, 6, color=(255,)*3)
-    pf = f
-    f = norm(point_2[0], point_1[0], point_3[0])
-    if pf != f:
-        print(round(f,2))
+    screen.draw_circle(point_4, 6, color=(255,)*3)
+    screen.draw_circle(point_5, 6, color=(255,)*3)
+    # pf = f
+    # f = norm(point_2[0], point_1[0], point_3[0])
+    # if pf != f:
+    #     print(round(f,2))
     for t in range(0,denominateur, nominateur):
         t /= denominateur
-        x1 = lerp(t, 0, f)
-        x2 = lerp(t, f, 1)
+        x1 = bezier(t, point_1[0], point_2[0], point_3[0], point_4[0])
+        x2 = bezier(t, point_2[0], point_3[0], point_4[0], point_5[0])
         x3 = lerp(t, x1, x2)
-        x3 *= point_3[0]
 
-        y1 = lerp(t, point_1[1], point_2[1])
-        y2 = lerp(t, point_2[1], point_3[1])
+        y1 = bezier(t, point_1[1], point_2[1], point_3[1], point_4[1])
+        y2 = bezier(t, point_2[1], point_3[1], point_4[1], point_5[1])
         y3 = lerp(t, y1, y2)
 
-        screen.draw_circle((x3, 300), 1, color=(255,)*3)
+        screen.draw_circle((x3, y3), 1, color=(255,)*3)
+        # screen.draw_circle((x3, 300), 1, color=(255,)*3)
 
 
     pg.display.update()

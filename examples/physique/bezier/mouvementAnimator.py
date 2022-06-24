@@ -13,14 +13,14 @@ clock = pg.time.Clock()
 screen.make_background((125,)*3)
 image = pg.Surface((50,50))
 
-start = 0,0
-dest = 600,400
+start = 200,100
+dest = 400,300
 
-# pos1 = start
+
 pos2 = dest
 
-# anim1 = AnimateValue(start, dest, mode="linear", fps=fps, time=5)
-anim2 = AnimateValue(dest, start, mode="linear", fps=fps, time=2)
+anim1 = AnimateValue((0,255,0), (245,25,16), keys=[0,0.2,1], fps=fps, time=2)
+anim2 = AnimateValue(dest, start, keys=[0,-1,2,1], fps=fps, time=2)
 
 run = True
 while run:
@@ -30,14 +30,16 @@ while run:
         if event.type == pg.QUIT:
             run = False
 
-    # pos1 = anim1.next(pos1)
-    pos2 = anim2.next(pos2)
+    color = anim1.next()
+    pos2 = anim2.next()
 
     if anim2.has_finish():
         anim2.reset()
+    if anim1.has_finish():
+        anim1.reset()
 
     screen.draw_background()
-    # screen.blit(image, pos1)
+    image.fill(color)
     screen.blit(image, pos2)
 
     # screen.display_update()

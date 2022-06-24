@@ -139,6 +139,7 @@ class SmartScreen(CameraScreen):
     def blit(self, image, rect, area=None):
         r = self.surface.blit(image, rect, area)
         self.to_update.append(r)
+        return r
     
     def draw(self, other, area=None):
         if hasattr(other, "draw"):

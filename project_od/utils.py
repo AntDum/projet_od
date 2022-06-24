@@ -2,6 +2,7 @@ from random import shuffle
 from math import sqrt, floor
 from heapq import heappush, heappop, heapify
 from copy import deepcopy, copy
+from pygame import Vector2, Vector3
 
 def norm(x, _min, _max):
     return (x - _min) / (_max - _min)
@@ -9,18 +10,7 @@ def norm(x, _min, _max):
 def lerp(x, _min, _max):
     return (_max - _min) * x + _min
 
-def bezier_lin(t, p_0, p_1):
-    return p_0 + (p_1 - p_0) * t
-
-def bezier_quad(t, p_0, p_1, p_2):
-    return p_1 + (1-t)**2*(p_0 - p_1) + t**2*(p_2 - p_1)
-
-def bezier_cub(t, p_0, p_1, p_2, p_3):
-    return (1-t)**3*p_0 + 3*(1-t)**2*t*p_1 + 3*(1-t)*t**2*p_2 + t**3*p_3
-
-bezier = bezier_cub
-
-def map(x, source_min, source_max, dest_min, dest_max):
+def translate(x, source_min, source_max, dest_min, dest_max):
     return lerp(norm(x, source_min, source_max), dest_min, dest_max)
 
 def clamp(x, min_val, max_val):
@@ -191,3 +181,61 @@ def around_4(x, y):
 
 def around_8(x, y):
     return (x-1,y),(x-1,y-1),(x, y-1),(x+1,y-1),(x+1,y),(x+1,y+1),(x,y+1),(x-1,y+1)
+
+#
+# Bézier stuff
+#
+
+def bezier_lin(t, p_0, p_1):
+    """bezier linear"""
+    return p_0 + (p_1 - p_0) * t
+
+def bezier_quad(t, p_0, p_1, p_2):
+    """bezier quadratic"""
+    return p_1 + (1-t)**2*(p_0 - p_1) + t**2*(p_2 - p_1)
+
+def bezier_cub(t, p_0, p_1, p_2, p_3):
+    """bezier cubic"""
+    return (1-t)**3*p_0 + 3*(1-t)**2*t*p_1 + 3*(1-t)*t**2*p_2 + t**3*p_3
+
+def bezier(t, *args):
+    if len(args) == 2:
+        return bezier_lin(t,*args)
+    if len(args) == 3:
+        return bezier_quad(t,*args)
+    if len(args) == 4:
+        return bezier_cub(t,*args)
+
+
+def bezier_quad_d(t, p_0, p_1, p_2):
+    """bezier quadratic derivative"""
+    return 2*(1-t)*(p_1 - p_0) + 2*t*(p_2 - p_1)
+
+def bezier_quad_2d(t, p_0, p_1, p_2):
+    """bezier quadratic second derivative"""
+    return 2*(p_2 - 2*p_1 + p_0)
+
+def bezier_cub_d(t, p_0, p_1, p_2, p_3):
+    """bezier cubic derivative"""
+    return 3*(1-t)**2*(p_1-p_0) + 6*(1-t)*t*(p_2-p_1)+3*t**2*(p_3-p_2)
+
+def bezier_cub_2d(t, p_0, p_1, p_2, p_3):
+    """bezier cubic second derivative"""
+    return 6*(1-t)*(p_2-2*p_1+p_0) + 6*t*(p_3-2*p_2+p_1)
+
+def bezier_cub_norm(t, p_0, p_1, p_2, p_3):
+    """bezier cubic normal direction
+        p_* need to be a vector where .normalize() can be called
+    """
+    return bezier_cub_d(t, p_0, p_1, p_2, p_3).normalize().rotate(90)
+
+def bezier_quad_norm(t, p_0, p_1, p_2, p_3):
+    """bezier quadratic normal direction
+        p_* need to be a vector where .normalize() can be called
+    """
+    return bezier_quad_d(t, p_0, p_1, p_2, p_3).normalize().rotate(90)
+
+def curvature_parametrize(deriv, sec_deriv):
+    """Give the curvature, with the derivative and the second derivative
+        deriv is a vector 2d"""
+    return (deriv.x*sec_deriv.y - deriv.y*sec_deriv.x)/deriv.length()**3
