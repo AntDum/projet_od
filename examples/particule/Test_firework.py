@@ -26,6 +26,7 @@ grp.append(fire)
 
 run = True
 while run:
+    dt = clock.tick(30) / 1000
     for event in pg.event.get():
         if event.type == pg.QUIT:
             run = False
@@ -34,12 +35,12 @@ while run:
             grp.append(pe.FireWork(event.pos[0], 400, timer=1+random.random()*1.5, amount=random.randint(10,30), missile_color=color))
 
     for firework in grp:
+        firework.update(dt)
         firework.draw(win)
 
     grp = [item for item in grp if not item.has_finish]
 
     pg.display.update()
 
-    clock.tick(30)
 
 pg.quit()

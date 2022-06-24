@@ -4,12 +4,12 @@ from random import randint, uniform
 
 
 class FireWork(particleSystem.ParticleSystem):
-    def __init__(self, x, y, timer=1, amount=20, life_time=4, missile_size=5, particule_size=2,color=None, missile_color=(200, 215, 200), FPS=60, raw=False):
+    def __init__(self, x, y, timer=1, amount=20, life_time=4, missile_size=5, particule_size=2,color=None, missile_color=(200, 215, 200), raw=False):
         super().__init__(raw)
 
         self.pos = pygame.math.Vector2(x, y)
-        self.timer = timer*FPS
-        self.life_time = life_time*FPS
+        self.timer = timer
+        self.life_time = life_time
         self.count = 0
         self.amount = amount
         self.color = color
@@ -39,8 +39,13 @@ class FireWork(particleSystem.ParticleSystem):
                     randint(1, 4), size, size, color=color, gravity=True)
             self.add(p)
 
+
+    def update(self, dt):
+        self.count += dt
+
+
     def draw(self, screen):
-        self.count += 1
+
         if not self.has_exploded and self.timer <= self.count:
             self.explode(screen)
             self.count = 0
@@ -54,16 +59,18 @@ class FireWork(particleSystem.ParticleSystem):
 
 
 class Dust(particleSystem.ParticleSystem):
-    def __init__(self, x, y, life_time=1, color=None, gravity=True, FPS=60, raw=False):
+    def __init__(self, x, y, life_time=1, color=None, gravity=True, raw=False):
         super().__init__(raw)
         self.pos = pygame.math.Vector2(x, y)
-        self.life_time = int(life_time)*FPS
+        self.life_time = int(life_time)
         self.count = 0
         self.color = color
         self.gravity = gravity
 
+    def update(self, dt):
+        self.count += dt
+
     def draw(self, screen):
-        self.count += 1
 
         size = randint(3, 10)
 
@@ -112,19 +119,21 @@ class Explosion(particleSystem.ParticleSystem):
                             gravity=False))
         return self
 
-    def draw(self, screen):
-        self.count += 1
+    def update(self, dt):
+        self.count += dt
+        
 
+    def draw(self, screen):
         if self.life_time <= self.count:
-            for _ in range(randint(self.amount//20,self.amount//5)):
-                self.remove_first(screen)
-                self.amount_count -= 1
+            if self.amount_count > 0:
+                for _ in range(max(1,randint(self.amount_count//20,self.amount_count//5))):
+                    self.remove_first(screen)
+                    self.amount_count -= 1
         
         if self.amount_count <= 0:
             self.has_finish = True
 
         super().draw(screen)
-
 
 
 class FireExplosion(particleSystem.ParticleSystem):
@@ -164,25 +173,27 @@ class FireExplosion(particleSystem.ParticleSystem):
                             gravity=True, grav=(0,-0.1)))
         return self
 
-    def draw(self, screen):
-        self.count += 1
+    def update(self, dt):
+        self.count += dt
+        
 
+    def draw(self, screen):
         if self.life_time <= self.count:
-            for _ in range(randint(self.amount//20,self.amount//5)):
-                self.remove_first(screen)
-                self.amount_count -= 1
+            if self.amount_count > 0:
+                for _ in range(max(1,randint(self.amount_count//20,self.amount_count//5))):
+                    self.remove_first(screen)
+                    self.amount_count -= 1
         
         if self.amount_count <= 0:
             self.has_finish = True
 
         super().draw(screen)
 
-
 class Smoke(particleSystem.ParticleSystem):
-    def __init__(self, x, y, amount=20, life_time=1, color=None, size=None, FPS=60, raw=False):
+    def __init__(self, x, y, amount=20, life_time=1, color=None, size=None, raw=False):
         super().__init__(raw)
         self.pos = pygame.math.Vector2(x, y)
-        self.life_time = life_time*FPS
+        self.life_time = life_time
         self.count = 0
         self.amount = amount
         self.amount_count = amount
@@ -209,13 +220,16 @@ class Smoke(particleSystem.ParticleSystem):
                             gravity=True, grav=(0,-0.05)))
         return self
 
-    def draw(self, screen):
-        self.count += 1
+    def update(self, dt):
+        self.count += dt
+        
 
+    def draw(self, screen):
         if self.life_time <= self.count:
-            for _ in range(randint(self.amount//20,self.amount//5)):
-                self.remove_first(screen)
-                self.amount_count -= 1
+            if self.amount_count > 0:
+                for _ in range(max(1,randint(self.amount_count//20,self.amount_count//5))):
+                    self.remove_first(screen)
+                    self.amount_count -= 1
         
         if self.amount_count <= 0:
             self.has_finish = True
@@ -254,19 +268,21 @@ class LandExplosion(particleSystem.ParticleSystem):
                             gravity=False))
         return self
 
-    def draw(self, screen):
-        self.count += 1
+    def update(self, dt):
+        self.count += dt
+        
 
+    def draw(self, screen):
         if self.life_time <= self.count:
-            for _ in range(randint(self.amount//20,self.amount//5)):
-                self.remove_first(screen)
-                self.amount_count -= 1
+            if self.amount_count > 0:
+                for _ in range(max(1,randint(self.amount_count//20,self.amount_count//5))):
+                    self.remove_first(screen)
+                    self.amount_count -= 1
         
         if self.amount_count <= 0:
             self.has_finish = True
 
         super().draw(screen)
-        
 
 class RewardExplosion(particleSystem.ParticleSystem):
     def __init__(self, x, y, amount=20, life_time=1, color=None, size=None, FPS=60, raw=False):
@@ -296,13 +312,16 @@ class RewardExplosion(particleSystem.ParticleSystem):
                     randint(1, 4), size, size, color=color, gravity=True))
         return self
 
-    def draw(self, screen):
-        self.count += 1
+    def update(self, dt):
+        self.count += dt
+        
 
+    def draw(self, screen):
         if self.life_time <= self.count:
-            for _ in range(randint(self.amount//20,self.amount//5)):
-                self.remove_first(screen)
-                self.amount_count -= 1
+            if self.amount_count > 0:
+                for _ in range(max(1,randint(self.amount_count//20,self.amount_count//5))):
+                    self.remove_first(screen)
+                    self.amount_count -= 1
         
         if self.amount_count <= 0:
             self.has_finish = True

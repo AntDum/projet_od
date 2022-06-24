@@ -46,8 +46,7 @@ class Particle(pygame.sprite.Sprite):
     def update(self, dt=1):
         self.prev_rect = pygame.Rect(self.rect)
 
-        self.speed += self.acceleration
-        self.speed += self.gravity
+        self.speed += (self.acceleration + self.gravity) * dt
 
         self.pos += self.speed * dt
 
@@ -71,13 +70,17 @@ class Particle(pygame.sprite.Sprite):
 
 
 class ParticleSystem(pygame.sprite.RenderUpdates):
-    def __init__(self, no_cam=False):
+    def __init__(self, no_cam=True):
         super().__init__()
         self.no_cam = no_cam
         self.has_finish = False
+        self.time_alive = 0
+    
+    def update(self, dt=1):
+        self.time_alive += dt
+        super().update()
 
     def draw(self, screen):
-        self.update()
         if self.no_cam:
             rect_list = [sprite.draw_background(screen) for sprite in self.sprites()]
             rect_list.extend(super().draw(screen))

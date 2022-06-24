@@ -47,6 +47,7 @@ while run:
     to_update = []
 
     for firework in grp:
+        firework.update(dt)
         to_update.extend(firework.draw(win))
 
     grp = [item for item in grp if not item.has_finish]

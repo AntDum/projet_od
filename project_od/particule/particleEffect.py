@@ -4,12 +4,12 @@ from random import randint, uniform
 
 
 class FireWork(particleSystem.ParticleSystem):
-    def __init__(self, x, y, timer=1, amount=20, life_time=4, color=None, missile_color=(255, 125, 125), FPS=60):
+    def __init__(self, x, y, timer=1, amount=20, life_time=4, color=None, missile_color=(255, 125, 125)):
         super().__init__()
 
         self.pos = pygame.math.Vector2(x, y)
-        self.timer = int(timer)*FPS
-        self.life_time = int(life_time)*FPS
+        self.timer = int(timer)
+        self.life_time = int(life_time)
         self.count = 0
         self.amount = amount
         self.color = color
@@ -34,9 +34,12 @@ class FireWork(particleSystem.ParticleSystem):
             p = particleSystem.Particle(self.pos[0], self.pos[1], randint(
                 0, 360), randint(2, 5), size, size, color=color, gravity=True)
             self.add(p)
+    
+    def update(self, dt):
+        super().update(dt)
+        self.count += dt
 
     def draw(self, screen):
-        self.count += 1
         if not self.has_exploded and self.timer <= self.count:
             self.explode(screen)
             self.count = 0
@@ -50,17 +53,15 @@ class FireWork(particleSystem.ParticleSystem):
 
 
 class Dust(particleSystem.ParticleSystem):
-    def __init__(self, x, y, life_time=1, color=None, gravity=True, FPS=60):
+    def __init__(self, x, y, life_time=1, color=None, gravity=True):
         super().__init__()
         self.pos = pygame.math.Vector2(x, y)
-        self.life_time = int(life_time)*FPS
-        self.count = 0
+        self.life_time = int(life_time)
         self.color = color
         self.gravity = gravity
 
     def draw(self, screen):
-        self.count += 1
-
+        
         size = randint(3, 10)
 
         if self.color == None:
@@ -71,17 +72,16 @@ class Dust(particleSystem.ParticleSystem):
         self.add(particleSystem.Particle(self.pos[0], self.pos[1], randint(
             0, 360), randint(1, 2), size, size, color=color, gravity=self.gravity))
 
-        if self.count >= self.life_time:
+        if self.time_alive >= self.life_time:
             self.remove_first(screen)
         return super().draw(screen)
         
 
 class Explosion(particleSystem.ParticleSystem):
-    def __init__(self, x, y, amount=20, life_time=1, color=None, size=None, FPS=60):
+    def __init__(self, x, y, amount=20, life_time=1, color=None, size=None):
         super().__init__()
         self.pos = pygame.math.Vector2(x, y)
         self.life_time = life_time
-        self.count = 0
         self.amount = amount
         self.amount_count = amount
         self.color = color
@@ -107,12 +107,10 @@ class Explosion(particleSystem.ParticleSystem):
                             gravity=False))
         return self
 
-    def updated(self, dt):
-        self.count += dt
 
     def draw(self, screen):
 
-        if self.life_time <= self.count:
+        if self.life_time <= self.time_alive:
             for _ in range(randint(self.amount_count//20,self.amount_count//5)):
                 self.remove_first(screen)
                 self.amount_count -= 1

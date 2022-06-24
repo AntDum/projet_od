@@ -24,16 +24,20 @@ dusting = pe.Dust(0, 0, gravity=False)
 
 run = True
 while run:
+    dt = clock.tick(30) / 1000
     for event in pg.event.get():
         if event.type == pg.QUIT:
             run = False
         if event.type == pg.MOUSEMOTION:
             dusting.pos.x = event.pos[0]
             dusting.pos.y = event.pos[1]
+            print(event.pos)
+
+    dusting.update(dt)
 
     rects = dusting.draw(win)
+
     pg.display.update(rects)
 
-    clock.tick(30)
 
 pg.quit()
