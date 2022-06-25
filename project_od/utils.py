@@ -239,3 +239,8 @@ def curvature_parametrize(deriv, sec_deriv):
     """Give the curvature, with the derivative and the second derivative
         deriv is a vector 2d"""
     return (deriv.x*sec_deriv.y - deriv.y*sec_deriv.x)/deriv.length()**3
+
+def bezier_length(*points, granularity=10):
+    """Give the length of the curve, need to be vector
+    """
+    return sum((bezier((i+1)/granularity, *points) - bezier(i/granularity, *points)).length() for i in range(granularity))
